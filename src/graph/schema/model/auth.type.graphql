@@ -1,0 +1,4 @@
+type AuthLoginResponse {
+    access_token: String!
+    refresh_token: String!
+}

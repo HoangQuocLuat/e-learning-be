@@ -1,0 +1,14 @@
+type UserInfor @key(fields: "id") {
+    id: String!
+    id_account: String!
+    name: String!
+    date_birth: String!
+    phone: String!
+    email: String!
+    address: String!
+}
+
+type UserInforPagination {
+    rows: [UserInfor!]!
+    paging: Pagination!
+}

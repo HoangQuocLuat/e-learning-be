@@ -1,0 +1,3 @@
+extend type Query {
+    authLogin(user_name: String!, password: String!): AuthLoginResponse!
+}

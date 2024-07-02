@@ -1,0 +1,9 @@
+# ---------- Scalar ---------
+scalar Map
+# ---------- Model ----------
+type Pagination {
+    current_page: Int!
+    limit: Int!
+    total_pages: Int!
+    total: Int!
+}

@@ -1,0 +1,39 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
+### Go template
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.env
+*.sum
+
+# Test binary, built with `go test -c`
+*.test
+*.log
+
+*.txt
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+_core
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+cmd/log
+
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

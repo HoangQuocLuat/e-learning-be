@@ -1,0 +1,16 @@
+input UserInforAdd {
+    id_account: String!
+    name: String!
+    date_birth: String!
+    phone: String!
+    email: String!
+    address: String!
+}
+
+input UserInforUpdate {
+    name: String
+    date_birth: String
+    phone: String
+    email: String
+    address: String
+}

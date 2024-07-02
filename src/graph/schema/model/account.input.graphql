@@ -1,0 +1,15 @@
+input AccountAdd {
+    username: String!
+    password: String!
+    role: String!
+}
+
+input AccountChangePassword {
+    id: String!
+    password: String!
+    new_password: String!
+}
+
+input AccountDelete {
+    id: String!
+}

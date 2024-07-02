@@ -1,0 +1,10 @@
+type Account @key(fields: "id") {
+    id: String!
+    role: String!
+    status: Int!
+}
+
+type AccountPagination {
+    rows: [Account!]!
+    paging: Pagination!
+}
