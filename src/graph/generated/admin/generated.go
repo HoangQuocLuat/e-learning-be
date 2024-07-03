@@ -84,7 +84,6 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AccountMe           func(childComplexity int) int
 		AccountPagination   func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
 		AuthAdminLogin      func(childComplexity int, userName string, password string) int
 		UserInforMe         func(childComplexity int) int
@@ -124,7 +123,6 @@ type MutationResolver interface {
 	UserInforUpdate(ctx context.Context, data *graph_model.UserInforUpdate) (*graph_model.UserInfor, error)
 }
 type QueryResolver interface {
-	AccountMe(ctx context.Context) (*graph_model.Account, error)
 	AccountPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.AccountPagination, error)
 	AuthAdminLogin(ctx context.Context, userName string, password string) (*graph_model.AuthLoginResponse, error)
 	UserInforMe(ctx context.Context) (*graph_model.UserInfor, error)
@@ -298,13 +296,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Pagination.TotalPages(childComplexity), true
-
-	case "Query.accountMe":
-		if e.complexity.Query.AccountMe == nil {
-			break
-		}
-
-		return e.complexity.Query.AccountMe(childComplexity), true
 
 	case "Query.accountPagination":
 		if e.complexity.Query.AccountPagination == nil {
@@ -620,7 +611,6 @@ type UserInforPagination {
     paging: Pagination!
 }`, BuiltIn: false},
 	{Name: "../../schema/admin/account.graphql", Input: `extend type Query {
-    accountMe: Account!
     accountPagination(
         page: Int!
         limit: Int!
@@ -1849,58 +1839,6 @@ func (ec *executionContext) fieldContext_Pagination_total(ctx context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_accountMe(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_accountMe(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().AccountMe(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*graph_model.Account)
-	fc.Result = res
-	return ec.marshalNAccount2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAccount(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_accountMe(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Account_id(ctx, field)
-			case "role":
-				return ec.fieldContext_Account_role(ctx, field)
-			case "status":
-				return ec.fieldContext_Account_status(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
 		},
 	}
 	return fc, nil
@@ -5237,28 +5175,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "accountMe":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_accountMe(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "accountPagination":
 			field := field
 

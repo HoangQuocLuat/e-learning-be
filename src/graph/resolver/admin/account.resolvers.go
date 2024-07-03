@@ -9,7 +9,8 @@ import (
 	generated_admin "e-learning/src/graph/generated/admin"
 	graph_model "e-learning/src/graph/generated/model"
 	service_account "e-learning/src/service/account"
-	"fmt"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 // AccountAdd is the resolver for the accountAdd field.
@@ -30,17 +31,55 @@ func (r *mutationResolver) AccountAdd(ctx context.Context, data *graph_model.Acc
 
 // AccountDelete is the resolver for the AccountDelete field.
 func (r *mutationResolver) AccountDelete(ctx context.Context, data *graph_model.AccountDelete) (*graph_model.Account, error) {
-	panic(fmt.Errorf("not implemented: AccountDelete - AccountDelete"))
-}
+	input := &service_account.AccountDeleteCommand{
+		ID: data.ID,
+	}
 
-// AccountMe is the resolver for the accountMe field.
-func (r *queryResolver) AccountMe(ctx context.Context) (*graph_model.Account, error) {
-	panic(fmt.Errorf("not implemented: AccountMe - accountMe"))
+	err := service_account.AccountDelete(ctx, input)
+	if err != nil {
+		return &graph_model.Account{}, err
+	}
+
+	return &graph_model.Account{}, nil
 }
 
 // AccountPagination is the resolver for the accountPagination field.
 func (r *queryResolver) AccountPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.AccountPagination, error) {
-	panic(fmt.Errorf("not implemented: AccountPagination - accountPagination"))
+	input := &service_account.AccountPaginationCommand{
+		Page:  page,
+		Limit: limit,
+	}
+
+	if orderBy != nil {
+		input.OrderBy = *orderBy
+	}
+
+	if search != nil {
+		input.Search = search
+	}
+
+	total, result, err := service_account.AccountPagination(ctx, input)
+	if err != nil {
+		if graphql.GetErrors(ctx) == nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+
+	accounts := make([]graph_model.Account, 0)
+	for i := 0; i < len(result); i++ {
+		accounts = append(accounts, *result[i].ConvertToModelGraph())
+	}
+
+	return &graph_model.AccountPagination{
+		Rows: accounts,
+		Paging: graph_model.Pagination{
+			CurrentPage: page,
+			Limit:       limit,
+			TotalPages:  CalculateTotalPage(total, limit),
+			Total:       total,
+		},
+	}, nil
 }
 
 // Mutation returns generated_admin.MutationResolver implementation.

@@ -1,5 +1,4 @@
 extend type Query {
-    accountMe: Account!
     accountPagination(
         page: Int!
         limit: Int!
