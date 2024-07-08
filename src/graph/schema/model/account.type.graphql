@@ -2,6 +2,11 @@ type Account @key(fields: "id") {
     id: String!
     role: String!
     status: Int!
+    name: String!
+    date_birth: String!
+    phone: String!
+    email: String!
+    address: String!
 }
 
 type AccountPagination {

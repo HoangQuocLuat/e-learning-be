@@ -18,6 +18,12 @@ type AccountAddCommand struct {
 	UserName string
 	Password string
 	Role     string
+
+	Name      string
+	DateBirth string
+	Phone     string
+	Email     string
+	Address   string
 }
 
 func (c *AccountAddCommand) Valid() error {
@@ -53,10 +59,15 @@ func AccountAdd(ctx context.Context, c *AccountAddCommand) (result *model_accoun
 	result = &model_account.Account{
 		ID: primitive.NewObjectID().Hex(),
 
-		UserName: c.UserName,
-		Password: string(password),
-		Role:     c.Role,
-		Status:   model_account.StatusActive,
+		UserName:  c.UserName,
+		Password:  string(password),
+		Role:      c.Role,
+		Status:    model_account.StatusActive,
+		Name:      c.Name,
+		DateBirth: c.DateBirth,
+		Phone:     c.Phone,
+		Email:     c.Email,
+		Address:   c.Address,
 
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),

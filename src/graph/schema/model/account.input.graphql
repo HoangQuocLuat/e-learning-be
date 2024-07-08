@@ -2,6 +2,19 @@ input AccountAdd {
     username: String!
     password: String!
     role: String!
+    name: String!
+    date_birth: String!
+    phone: String!
+    email: String!
+    address: String!
+}
+
+input AccountUpdate {
+    name: String
+    date_birth: String
+    phone: String
+    email: String
+    address: String
 }
 
 input AccountChangePassword {

@@ -21,6 +21,7 @@ const (
 
 const (
 	ElementErr_Account = "1-"
+	ElementErr_Infor   = "2-"
 )
 
 const (

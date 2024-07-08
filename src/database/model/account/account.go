@@ -24,6 +24,12 @@ type Account struct {
 	Password string `json:"password" bson:"password"`
 	Status   int    `json:"status" bson:"status"`
 
+	Name      string `json:"name" bson:"name"`
+	DateBirth string `json:"date_birth" bson:"date_birth"`
+	Phone     string `json:"phone" bson:"phone"`
+	Email     string `json:"email" bson:"email"`
+	Address   string `json:"address" bson:"address"`
+
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
@@ -41,8 +47,13 @@ func (a *Account) ConvertToModelGraph() *graphModel.Account {
 	data := graphModel.Account{
 		ID: a.ID,
 
-		Role:   a.Role,
-		Status: a.Status,
+		Role:      a.Role,
+		Status:    a.Status,
+		Name:      a.Name,
+		DateBirth: a.DateBirth,
+		Phone:     a.Phone,
+		Email:     a.Email,
+		Address:   a.Address,
 	}
 
 	return &data

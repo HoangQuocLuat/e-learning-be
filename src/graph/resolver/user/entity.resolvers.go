@@ -16,11 +16,6 @@ func (r *entityResolver) FindAccountByID(ctx context.Context, id string) (*graph
 	panic(fmt.Errorf("not implemented: FindAccountByID - findAccountByID"))
 }
 
-// FindUserInforByID is the resolver for the findUserInforByID field.
-func (r *entityResolver) FindUserInforByID(ctx context.Context, id string) (*graph_model.UserInfor, error) {
-	panic(fmt.Errorf("not implemented: FindUserInforByID - findUserInforByID"))
-}
-
 // Entity returns generated_user.EntityResolver implementation.
 func (r *Resolver) Entity() generated_user.EntityResolver { return &entityResolver{r} }
 

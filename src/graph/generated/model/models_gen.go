@@ -3,17 +3,27 @@
 package graph_model
 
 type Account struct {
-	ID     string `json:"id"`
-	Role   string `json:"role"`
-	Status int    `json:"status"`
+	ID        string `json:"id"`
+	Role      string `json:"role"`
+	Status    int    `json:"status"`
+	Name      string `json:"name"`
+	DateBirth string `json:"date_birth"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+	Address   string `json:"address"`
 }
 
 func (Account) IsEntity() {}
 
 type AccountAdd struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Role      string `json:"role"`
+	Name      string `json:"name"`
+	DateBirth string `json:"date_birth"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+	Address   string `json:"address"`
 }
 
 type AccountChangePassword struct {
@@ -29,6 +39,14 @@ type AccountDelete struct {
 type AccountPagination struct {
 	Rows   []Account  `json:"rows"`
 	Paging Pagination `json:"paging"`
+}
+
+type AccountUpdate struct {
+	Name      *string `json:"name,omitempty"`
+	DateBirth *string `json:"date_birth,omitempty"`
+	Phone     *string `json:"phone,omitempty"`
+	Email     *string `json:"email,omitempty"`
+	Address   *string `json:"address,omitempty"`
 }
 
 type AuthLoginResponse struct {
@@ -47,38 +65,4 @@ type Pagination struct {
 }
 
 type Query struct {
-}
-
-type UserInfor struct {
-	ID        string `json:"id"`
-	IDAccount string `json:"id_account"`
-	Name      string `json:"name"`
-	DateBirth string `json:"date_birth"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
-	Address   string `json:"address"`
-}
-
-func (UserInfor) IsEntity() {}
-
-type UserInforAdd struct {
-	IDAccount string `json:"id_account"`
-	Name      string `json:"name"`
-	DateBirth string `json:"date_birth"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
-	Address   string `json:"address"`
-}
-
-type UserInforPagination struct {
-	Rows   []UserInfor `json:"rows"`
-	Paging Pagination  `json:"paging"`
-}
-
-type UserInforUpdate struct {
-	Name      *string `json:"name,omitempty"`
-	DateBirth *string `json:"date_birth,omitempty"`
-	Phone     *string `json:"phone,omitempty"`
-	Email     *string `json:"email,omitempty"`
-	Address   *string `json:"address,omitempty"`
 }
