@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 		Phone     func(childComplexity int) int
 		Role      func(childComplexity int) int
 		Status    func(childComplexity int) int
+		UserName  func(childComplexity int) int
 	}
 
 	AccountPagination struct {
@@ -183,6 +184,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Account.Status(childComplexity), true
+
+	case "Account.user_name":
+		if e.complexity.Account.UserName == nil {
+			break
+		}
+
+		return e.complexity.Account.UserName(childComplexity), true
 
 	case "AccountPagination.paging":
 		if e.complexity.AccountPagination.Paging == nil {
@@ -467,6 +475,7 @@ input AccountDelete {
 	{Name: "../../schema/model/auth.input.graphql", Input: ``, BuiltIn: false},
 	{Name: "../../schema/model/account.type.graphql", Input: `type Account @key(fields: "id") {
     id: String!
+    user_name: String!
     role: String!
     status: Int!
     name: String!
@@ -757,6 +766,50 @@ func (ec *executionContext) _Account_id(ctx context.Context, field graphql.Colle
 }
 
 func (ec *executionContext) fieldContext_Account_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Account",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Account_user_name(ctx context.Context, field graphql.CollectedField, obj *graph_model.Account) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Account_user_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Account_user_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Account",
 		Field:      field,
@@ -1118,6 +1171,8 @@ func (ec *executionContext) fieldContext_AccountPagination_rows(ctx context.Cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Account_id(ctx, field)
+			case "user_name":
+				return ec.fieldContext_Account_user_name(ctx, field)
 			case "role":
 				return ec.fieldContext_Account_role(ctx, field)
 			case "status":
@@ -1322,6 +1377,8 @@ func (ec *executionContext) fieldContext_Entity_findAccountByID(ctx context.Cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Account_id(ctx, field)
+			case "user_name":
+				return ec.fieldContext_Account_user_name(ctx, field)
 			case "role":
 				return ec.fieldContext_Account_role(ctx, field)
 			case "status":
@@ -1395,6 +1452,8 @@ func (ec *executionContext) fieldContext_Mutation_accountAdd(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Account_id(ctx, field)
+			case "user_name":
+				return ec.fieldContext_Account_user_name(ctx, field)
 			case "role":
 				return ec.fieldContext_Account_role(ctx, field)
 			case "status":
@@ -1465,6 +1524,8 @@ func (ec *executionContext) fieldContext_Mutation_AccountDelete(ctx context.Cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Account_id(ctx, field)
+			case "user_name":
+				return ec.fieldContext_Account_user_name(ctx, field)
 			case "role":
 				return ec.fieldContext_Account_role(ctx, field)
 			case "status":
@@ -4077,6 +4138,11 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = graphql.MarshalString("Account")
 		case "id":
 			out.Values[i] = ec._Account_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user_name":
+			out.Values[i] = ec._Account_user_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

@@ -4,6 +4,7 @@ package graph_model
 
 type Account struct {
 	ID        string `json:"id"`
+	UserName  string `json:"user_name"`
 	Role      string `json:"role"`
 	Status    int    `json:"status"`
 	Name      string `json:"name"`

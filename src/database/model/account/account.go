@@ -47,6 +47,7 @@ func (a *Account) ConvertToModelGraph() *graphModel.Account {
 	data := graphModel.Account{
 		ID: a.ID,
 
+		UserName:  a.UserName,
 		Role:      a.Role,
 		Status:    a.Status,
 		Name:      a.Name,

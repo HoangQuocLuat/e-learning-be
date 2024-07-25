@@ -53,12 +53,8 @@ func AccountPagination(ctx context.Context, c *AccountPaginationCommand) (total 
 	}
 	condition := make(map[string]interface{})
 
-	if role, ok := c.Search["role"]; ok {
-		condition["role"] = role
-	}
-
-	if status, ok := c.Search["status"]; ok {
-		condition["status"] = status
+	if phone, ok := c.Search["phone"]; ok {
+		condition["phone"] = phone
 	}
 
 	if user_name, ok := c.Search["user_name"]; ok {
