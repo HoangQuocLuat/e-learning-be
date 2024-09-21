@@ -6,7 +6,8 @@ package resolver_admin
 
 import (
 	"context"
-	model_account "e-learning/src/database/model/account"
+	model_user "e-learning/src/database/model/user"
+	generated_admin "e-learning/src/graph/generated/admin"
 	graph_model "e-learning/src/graph/generated/model"
 	service_auth "e-learning/src/service/auth"
 	"fmt"
@@ -24,7 +25,7 @@ func (r *queryResolver) AuthAdminLogin(ctx context.Context, userName string, pas
 		return &graph_model.AuthLoginResponse{}, err
 	}
 
-	if role != model_account.RoleAdmin && role != model_account.RoleSuperAdmin {
+	if role != model_user.RoleAdmin && role != model_user.RoleSuperAdmin {
 		return &graph_model.AuthLoginResponse{}, fmt.Errorf("permission denied")
 	}
 
@@ -33,3 +34,8 @@ func (r *queryResolver) AuthAdminLogin(ctx context.Context, userName string, pas
 		RefreshToken: refreshToken,
 	}, nil
 }
+
+// Query returns generated_admin.QueryResolver implementation.
+func (r *Resolver) Query() generated_admin.QueryResolver { return &queryResolver{r} }
+
+type queryResolver struct{ *Resolver }

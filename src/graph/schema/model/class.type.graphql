@@ -1,0 +1,6 @@
+type Class @key(fields: "id") {
+    id: String!
+    class_name: String!
+    user: User! @provides(fields: "id")
+    schedules: Schedules! @provides(fields: "id")
+}

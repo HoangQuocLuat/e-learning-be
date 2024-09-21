@@ -1,0 +1,22 @@
+input SchedulesAdd {
+    class_id: String!
+    day_of_week: String!
+    start_date: String!
+    end_date: String!
+    start_time: String!
+    end_time: String!
+    description: String!
+    schedules_type: String!
+}
+
+input SchedulesUpdate {
+    id: String!
+    start_time: String
+    end_time: String
+    description: String
+    schedules_type: String
+}
+
+input SchedulesDelete {
+    id: String!
+}

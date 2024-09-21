@@ -33,7 +33,15 @@ func ConnectDatabse(ctx context.Context) error {
 		}
 	}
 
-	if err := collection.LoadAccountCollectionMongo(mongoClient); err != nil {
+	if err := collection.LoadUserCollectionMongo(mongoClient); err != nil {
+		return err
+	}
+
+	if err := collection.LoadClassCollectionMongo(mongoClient); err != nil {
+		return err
+	}
+
+	if err := collection.LoadSchedulesCollectionMongo(mongoClient); err != nil {
 		return err
 	}
 

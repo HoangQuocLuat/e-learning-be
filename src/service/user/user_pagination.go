@@ -1,10 +1,10 @@
-package service_account
+package service_user
 
 import (
 	"context"
 	src_const "e-learning/src/const"
 	"e-learning/src/database/collection"
-	model_account "e-learning/src/database/model/account"
+	model_user "e-learning/src/database/model/user"
 	"e-learning/src/service"
 	"fmt"
 	"log"
@@ -16,14 +16,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type AccountPaginationCommand struct {
+type UserPaginationCommand struct {
 	Page    int                    `json:"page"`
 	Limit   int                    `json:"limit"`
 	OrderBy string                 `json:"order_by"`
 	Search  map[string]interface{} `json:"search"`
 }
 
-func (c *AccountPaginationCommand) Valid() error {
+func (c *UserPaginationCommand) Valid() error {
 	if c.Page < 1 {
 		c.Page = 1
 	}
@@ -34,20 +34,20 @@ func (c *AccountPaginationCommand) Valid() error {
 
 	_, err := govalidator.ValidateStruct(c)
 	if err != nil {
-		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.InvalidErr
+		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.InvalidErr
 		return fmt.Errorf(codeErr)
 	}
 	return nil
 }
 
-func AccountPagination(ctx context.Context, c *AccountPaginationCommand) (total int, results []model_account.Account, err error) {
-	log.Println("[service_account.AccountPagination] start")
+func UserPagination(ctx context.Context, c *UserPaginationCommand) (total int, results []model_user.User, err error) {
+	log.Println("[service_user.UserPagination] start")
 	defer func() {
-		log.Println("[service_account.AccountPagination] end", "data", map[string]interface{}{"command: ": c}, "error", err)
+		log.Println("[service_user.UserPagination] end", "data", map[string]interface{}{"command: ": c}, "error", err)
 	}()
 
 	if err = c.Valid(); err != nil {
-		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.InvalidErr
+		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.InvalidErr
 		service.AddError(ctx, "", "", codeErr)
 		return 0, nil, fmt.Errorf(codeErr)
 	}
@@ -101,9 +101,9 @@ func AccountPagination(ctx context.Context, c *AccountPaginationCommand) (total 
 		facectStage,
 	}
 
-	cur, err := collection.Account().Collection().Aggregate(ctx, pipeline)
+	cur, err := collection.User().Collection().Aggregate(ctx, pipeline)
 	if err != nil {
-		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.InternalError
+		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.InternalError
 		return 0, nil, fmt.Errorf(codeErr)
 	}
 
@@ -118,31 +118,31 @@ func AccountPagination(ctx context.Context, c *AccountPaginationCommand) (total 
 	}
 
 	// Extract the total count and rows from the result
-	accounts := make([]model_account.Account, 0)
+	users := make([]model_user.User, 0)
 
 	if len(listOrder["total"].(bson.A)) > 0 {
 		total = int(listOrder["total"].(bson.A)[0].(bson.M)["count"].(int32))
 		rows := listOrder["rows"].(bson.A)
 
-		for _, rawAccount := range rows {
-			accountBSON, err := bson.Marshal(rawAccount)
+		for _, rawUser := range rows {
+			userBSON, err := bson.Marshal(rawUser)
 			if err != nil {
-				codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.InternalError
+				codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.InternalError
 				service.AddError(ctx, "", "", codeErr)
 				return 0, nil, fmt.Errorf(codeErr)
 			}
 
-			var account model_account.Account
-			err = bson.Unmarshal(accountBSON, &account)
+			var user model_user.User
+			err = bson.Unmarshal(userBSON, &user)
 			if err != nil {
-				codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.InternalError
+				codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.InternalError
 				service.AddError(ctx, "", "", codeErr)
 				return 0, nil, fmt.Errorf(codeErr)
 			}
 
-			accounts = append(accounts, account)
+			users = append(users, user)
 		}
 	}
 
-	return int(total), accounts, nil
+	return int(total), users, nil
 }

@@ -6,8 +6,9 @@ package resolver_user
 
 import (
 	"context"
-	model_account "e-learning/src/database/model/account"
+	model_user "e-learning/src/database/model/user"
 	graph_model "e-learning/src/graph/generated/model"
+	generated_user "e-learning/src/graph/generated/user"
 	service_auth "e-learning/src/service/auth"
 	"fmt"
 )
@@ -24,7 +25,7 @@ func (r *queryResolver) AuthLogin(ctx context.Context, userName string, password
 		return &graph_model.AuthLoginResponse{}, err
 	}
 
-	if role != model_account.RoleUser {
+	if role != model_user.RoleUser {
 		return &graph_model.AuthLoginResponse{}, fmt.Errorf("permission denied")
 	}
 
@@ -33,3 +34,8 @@ func (r *queryResolver) AuthLogin(ctx context.Context, userName string, password
 		RefreshToken: refreshToken,
 	}, nil
 }
+
+// Query returns generated_user.QueryResolver implementation.
+func (r *Resolver) Query() generated_user.QueryResolver { return &queryResolver{r} }
+
+type queryResolver struct{ *Resolver }

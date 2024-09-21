@@ -80,21 +80,61 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 		}()
 
 		switch typeName {
-		case "Account":
-			resolverName, err := entityResolverNameForAccount(ctx, rep)
+		case "Class":
+			resolverName, err := entityResolverNameForClass(ctx, rep)
 			if err != nil {
-				return fmt.Errorf(`finding resolver for Entity "Account": %w`, err)
+				return fmt.Errorf(`finding resolver for Entity "Class": %w`, err)
 			}
 			switch resolverName {
 
-			case "findAccountByID":
+			case "findClassByID":
 				id0, err := ec.unmarshalNString2string(ctx, rep["id"])
 				if err != nil {
-					return fmt.Errorf(`unmarshalling param 0 for findAccountByID(): %w`, err)
+					return fmt.Errorf(`unmarshalling param 0 for findClassByID(): %w`, err)
 				}
-				entity, err := ec.resolvers.Entity().FindAccountByID(ctx, id0)
+				entity, err := ec.resolvers.Entity().FindClassByID(ctx, id0)
 				if err != nil {
-					return fmt.Errorf(`resolving Entity "Account": %w`, err)
+					return fmt.Errorf(`resolving Entity "Class": %w`, err)
+				}
+
+				list[idx[i]] = entity
+				return nil
+			}
+		case "Schedules":
+			resolverName, err := entityResolverNameForSchedules(ctx, rep)
+			if err != nil {
+				return fmt.Errorf(`finding resolver for Entity "Schedules": %w`, err)
+			}
+			switch resolverName {
+
+			case "findSchedulesByID":
+				id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+				if err != nil {
+					return fmt.Errorf(`unmarshalling param 0 for findSchedulesByID(): %w`, err)
+				}
+				entity, err := ec.resolvers.Entity().FindSchedulesByID(ctx, id0)
+				if err != nil {
+					return fmt.Errorf(`resolving Entity "Schedules": %w`, err)
+				}
+
+				list[idx[i]] = entity
+				return nil
+			}
+		case "User":
+			resolverName, err := entityResolverNameForUser(ctx, rep)
+			if err != nil {
+				return fmt.Errorf(`finding resolver for Entity "User": %w`, err)
+			}
+			switch resolverName {
+
+			case "findUserByID":
+				id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+				if err != nil {
+					return fmt.Errorf(`unmarshalling param 0 for findUserByID(): %w`, err)
+				}
+				entity, err := ec.resolvers.Entity().FindUserByID(ctx, id0)
+				if err != nil {
+					return fmt.Errorf(`resolving Entity "User": %w`, err)
 				}
 
 				list[idx[i]] = entity
@@ -169,7 +209,7 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 	}
 }
 
-func entityResolverNameForAccount(ctx context.Context, rep map[string]interface{}) (string, error) {
+func entityResolverNameForClass(ctx context.Context, rep map[string]interface{}) (string, error) {
 	for {
 		var (
 			m   map[string]interface{}
@@ -181,7 +221,41 @@ func entityResolverNameForAccount(ctx context.Context, rep map[string]interface{
 		if _, ok = m["id"]; !ok {
 			break
 		}
-		return "findAccountByID", nil
+		return "findClassByID", nil
 	}
-	return "", fmt.Errorf("%w for Account", ErrTypeNotFound)
+	return "", fmt.Errorf("%w for Class", ErrTypeNotFound)
+}
+
+func entityResolverNameForSchedules(ctx context.Context, rep map[string]interface{}) (string, error) {
+	for {
+		var (
+			m   map[string]interface{}
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		m = rep
+		if _, ok = m["id"]; !ok {
+			break
+		}
+		return "findSchedulesByID", nil
+	}
+	return "", fmt.Errorf("%w for Schedules", ErrTypeNotFound)
+}
+
+func entityResolverNameForUser(ctx context.Context, rep map[string]interface{}) (string, error) {
+	for {
+		var (
+			m   map[string]interface{}
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		m = rep
+		if _, ok = m["id"]; !ok {
+			break
+		}
+		return "findUserByID", nil
+	}
+	return "", fmt.Errorf("%w for User", ErrTypeNotFound)
 }

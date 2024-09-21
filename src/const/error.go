@@ -20,8 +20,10 @@ const (
 )
 
 const (
-	ElementErr_Account = "1-"
-	ElementErr_Infor   = "2-"
+	ElementErr_User  = "1-"
+	ElementErr_Infor = "2-"
+	ElementErr_Class = "3-"
+	ElementErr_Schedules = "4-"
 )
 
 const (
@@ -31,9 +33,11 @@ const (
 
 	AccountExist      = "1.1"
 	WrongPassword     = "1.2"
-	AccountNotFound   = "1.3"
-	AccountNotActive  = "1.4"
+	UserNotFound      = "1.3"
+	UserNotActive     = "1.4"
 	UnableCreateToken = "1.5"
+
+	ClassExist = "2.1"
 )
 
 const (

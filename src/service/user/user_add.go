@@ -1,4 +1,4 @@
-package service_account
+package service_user
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	src_const "e-learning/src/const"
-	model_account "e-learning/src/database/model/account"
+	model_user "e-learning/src/database/model/user"
 )
 
-type AccountAddCommand struct {
+type UserAddCommand struct {
 	UserName string
 	Password string
 	Role     string
@@ -26,43 +26,43 @@ type AccountAddCommand struct {
 	Address   string
 }
 
-func (c *AccountAddCommand) Valid() error {
+func (c *UserAddCommand) Valid() error {
 	if c.UserName == "" {
-		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.InvalidErr
+		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.InvalidErr
 		return fmt.Errorf(codeErr)
 	}
 
 	return nil
 }
 
-func AccountAdd(ctx context.Context, c *AccountAddCommand) (result *model_account.Account, err error) {
+func UserAdd(ctx context.Context, c *UserAddCommand) (result *model_user.User, err error) {
 	if err = c.Valid(); err != nil {
-		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.InvalidErr
+		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.InvalidErr
 		return nil, fmt.Errorf(codeErr)
 	}
 
 	condition := make(map[string]interface{})
 	condition["user_name"] = c.UserName
 
-	cnt, err := collection.Account().Collection().CountDocuments(ctx, condition)
+	cnt, err := collection.User().Collection().CountDocuments(ctx, condition)
 	if err == nil && cnt > 0 {
-		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.AccountExist
+		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.AccountExist
 		return nil, fmt.Errorf(codeErr)
 	}
 
 	password, err := bcrypt.GenerateFromPassword([]byte(c.Password), bcrypt.DefaultCost)
 	if err != nil {
-		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.WrongPassword
+		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.WrongPassword
 		return nil, fmt.Errorf(codeErr)
 	}
 
-	result = &model_account.Account{
+	result = &model_user.User{
 		ID: primitive.NewObjectID().Hex(),
 
 		UserName:  c.UserName,
 		Password:  string(password),
 		Role:      c.Role,
-		Status:    model_account.StatusActive,
+		Status:    model_user.StatusActive,
 		Name:      c.Name,
 		DateBirth: c.DateBirth,
 		Phone:     c.Phone,
@@ -71,17 +71,17 @@ func AccountAdd(ctx context.Context, c *AccountAddCommand) (result *model_accoun
 
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		LogsStatus: []model_account.LogStatus{
+		LogsStatus: []model_user.LogStatus{
 			{
-				Status:    model_account.StatusActive,
+				Status:    model_user.StatusActive,
 				CreatedAt: time.Now(),
 			},
 		},
 	}
 
-	_, err = collection.Account().Collection().InsertOne(ctx, result)
+	_, err = collection.User().Collection().InsertOne(ctx, result)
 	if err != nil {
-		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_Account + src_const.InternalError
+		codeErr := src_const.ServiceErr_Auth + src_const.ElementErr_User + src_const.InternalError
 		return nil, fmt.Errorf(codeErr)
 	}
 	return

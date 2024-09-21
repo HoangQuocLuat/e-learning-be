@@ -2,57 +2,34 @@
 
 package graph_model
 
-type Account struct {
-	ID        string `json:"id"`
-	UserName  string `json:"user_name"`
-	Role      string `json:"role"`
-	Status    int    `json:"status"`
-	Name      string `json:"name"`
-	DateBirth string `json:"date_birth"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
-	Address   string `json:"address"`
-}
-
-func (Account) IsEntity() {}
-
-type AccountAdd struct {
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-	Role      string `json:"role"`
-	Name      string `json:"name"`
-	DateBirth string `json:"date_birth"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
-	Address   string `json:"address"`
-}
-
-type AccountChangePassword struct {
-	ID          string `json:"id"`
-	Password    string `json:"password"`
-	NewPassword string `json:"new_password"`
-}
-
-type AccountDelete struct {
-	ID string `json:"id"`
-}
-
-type AccountPagination struct {
-	Rows   []Account  `json:"rows"`
-	Paging Pagination `json:"paging"`
-}
-
-type AccountUpdate struct {
-	Name      *string `json:"name,omitempty"`
-	DateBirth *string `json:"date_birth,omitempty"`
-	Phone     *string `json:"phone,omitempty"`
-	Email     *string `json:"email,omitempty"`
-	Address   *string `json:"address,omitempty"`
-}
+import (
+	"time"
+)
 
 type AuthLoginResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+type Class struct {
+	ID        string     `json:"id"`
+	ClassName string     `json:"class_name"`
+	User      *User      `json:"user"`
+	Schedules *Schedules `json:"schedules"`
+}
+
+func (Class) IsEntity() {}
+
+type ClassAdd struct {
+	ClassName string `json:"class_name"`
+}
+
+type ClassByID struct {
+	ID string `json:"id"`
+}
+
+type ClassDelete struct {
+	ID string `json:"id"`
 }
 
 type Mutation struct {
@@ -66,4 +43,91 @@ type Pagination struct {
 }
 
 type Query struct {
+}
+
+type Schedules struct {
+	ID            string    `json:"id"`
+	DayOfWeek     time.Time `json:"day_of_week"`
+	StartDate     time.Time `json:"start_date"`
+	EndDate       time.Time `json:"end_date"`
+	StartTime     time.Time `json:"start_time"`
+	EndTime       time.Time `json:"end_time"`
+	SchedulesType string    `json:"schedules_type"`
+	Description   string    `json:"description"`
+	Class         *Class    `json:"class"`
+}
+
+func (Schedules) IsEntity() {}
+
+type SchedulesAdd struct {
+	ClassID       string `json:"class_id"`
+	DayOfWeek     string `json:"day_of_week"`
+	StartDate     string `json:"start_date"`
+	EndDate       string `json:"end_date"`
+	StartTime     string `json:"start_time"`
+	EndTime       string `json:"end_time"`
+	Description   string `json:"description"`
+	SchedulesType string `json:"schedules_type"`
+}
+
+type SchedulesDelete struct {
+	ID string `json:"id"`
+}
+
+type SchedulesUpdate struct {
+	ID            string  `json:"id"`
+	StartTime     *string `json:"start_time,omitempty"`
+	EndTime       *string `json:"end_time,omitempty"`
+	Description   *string `json:"description,omitempty"`
+	SchedulesType *string `json:"schedules_type,omitempty"`
+}
+
+type User struct {
+	ID        string `json:"id"`
+	UserName  string `json:"user_name"`
+	Role      string `json:"role"`
+	Status    int    `json:"status"`
+	Name      string `json:"name"`
+	DateBirth string `json:"date_birth"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+	Address   string `json:"address"`
+	Class     *Class `json:"class"`
+}
+
+func (User) IsEntity() {}
+
+type UserAdd struct {
+	UserName  string `json:"user_name"`
+	Password  string `json:"password"`
+	Role      string `json:"role"`
+	Name      string `json:"name"`
+	DateBirth string `json:"date_birth"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
+	Address   string `json:"address"`
+}
+
+type UserChangePassword struct {
+	ID          string `json:"id"`
+	Password    string `json:"password"`
+	NewPassword string `json:"new_password"`
+}
+
+type UserDelete struct {
+	ID string `json:"id"`
+}
+
+type UserPagination struct {
+	Rows   []User     `json:"rows"`
+	Paging Pagination `json:"paging"`
+}
+
+type UserUpdate struct {
+	Name      *string `json:"name,omitempty"`
+	DateBirth *string `json:"date_birth,omitempty"`
+	Phone     *string `json:"phone,omitempty"`
+	Email     *string `json:"email,omitempty"`
+	Address   *string `json:"address,omitempty"`
+	Status    *int    `json:"status,omitempty"`
 }

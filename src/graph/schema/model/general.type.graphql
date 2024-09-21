@@ -1,5 +1,7 @@
 # ---------- Scalar ---------
+scalar Time
 scalar Map
+scalar Any
 # ---------- Model ----------
 type Pagination {
     current_page: Int!

@@ -1,0 +1,13 @@
+extend type Query {
+    userPagination(
+        page: Int!
+        limit: Int!
+        order_by: String
+        search: Map
+    ): UserPagination!
+}
+
+extend type Mutation {
+    userAdd(data: UserAdd): User!
+    userDelete(data: UserDelete): Boolean!
+}

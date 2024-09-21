@@ -17,7 +17,7 @@ const (
 	RoleUser       = "user"
 )
 
-type Account struct {
+type User struct {
 	ID string `json:"id" bson:"_id"`
 
 	UserName string `json:"user_name" bson:"user_name"`
@@ -43,10 +43,9 @@ type LogStatus struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }
 
-func (a *Account) ConvertToModelGraph() *graphModel.Account {
-	data := graphModel.Account{
+func (a *User) ConvertToModelGraph() *graphModel.User {
+	data := graphModel.User{
 		ID: a.ID,
-
 		UserName:  a.UserName,
 		Role:      a.Role,
 		Status:    a.Status,

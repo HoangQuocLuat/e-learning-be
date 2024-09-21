@@ -1,0 +1,11 @@
+input ClassAdd {
+    class_name: String!
+}
+
+input ClassDelete {
+    id: String!
+}
+
+input ClassByID {
+    id: String!
+}

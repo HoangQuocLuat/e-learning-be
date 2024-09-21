@@ -1,0 +1,8 @@
+extend type Query {
+    classList: [Class!]!
+}
+
+extend type Mutation {
+    classAdd(data: ClassAdd): Class!
+    classDelete(data: ClassDelete): Boolean!
+}

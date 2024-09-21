@@ -40,7 +40,7 @@ func ServeGraph(ctx context.Context, addr string) (err error) {
 		}
 	}(ctx, errChan)
 
-	log.Printf("Listen and Serve Order-Graph-Service API at: %s\n", addr)
+	log.Printf("Listen and Serve E-Learning-Graph-Service API at: %s\n", addr)
 
 	select {
 	case <-ctx.Done():

@@ -1,4 +1,4 @@
-type Account @key(fields: "id") {
+type User @key(fields: "id") {
     id: String!
     user_name: String!
     role: String!
@@ -8,9 +8,10 @@ type Account @key(fields: "id") {
     phone: String!
     email: String!
     address: String!
+    class: Class! @provides(fields: "id")
 }
 
-type AccountPagination {
-    rows: [Account!]!
+type UserPagination {
+    rows: [User!]!
     paging: Pagination!
 }

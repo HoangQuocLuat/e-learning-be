@@ -1,0 +1,9 @@
+extend type Query {
+    schedules(classID: String!): [Schedules!]!
+    schedulesList: [Schedules!]!
+}
+
+extend type Mutation {
+    schedulesAdd(data: SchedulesAdd): Schedules!
+    schedulesDelete(data: SchedulesDelete): Boolean!
+}

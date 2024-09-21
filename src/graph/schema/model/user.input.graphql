@@ -1,5 +1,5 @@
-input AccountAdd {
-    username: String!
+input UserAdd {
+    user_name: String!
     password: String!
     role: String!
     name: String!
@@ -9,20 +9,21 @@ input AccountAdd {
     address: String!
 }
 
-input AccountUpdate {
+input UserUpdate {
     name: String
     date_birth: String
     phone: String
     email: String
     address: String
+    status: Int
 }
 
-input AccountChangePassword {
+input UserChangePassword {
     id: String!
     password: String!
     new_password: String!
 }
 
-input AccountDelete {
+input UserDelete {
     id: String!
 }
