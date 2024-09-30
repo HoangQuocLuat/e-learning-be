@@ -1,4 +1,5 @@
 input UserAdd {
+    class_id: String!
     user_name: String!
     password: String!
     role: String!

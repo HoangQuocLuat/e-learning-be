@@ -20,9 +20,9 @@ const (
 )
 
 const (
-	ElementErr_User  = "1-"
-	ElementErr_Infor = "2-"
-	ElementErr_Class = "3-"
+	ElementErr_User      = "1-"
+	ElementErr_Infor     = "2-"
+	ElementErr_Class     = "3-"
 	ElementErr_Schedules = "4-"
 )
 
@@ -41,6 +41,7 @@ const (
 )
 
 const (
-	ServiceErr_Auth       = "1"
-	ServiceErr_E_Learning = "2"
+	ServiceErr_Auth       = "1-"
+	ServiceErr_E_Learning = "2-"
+	ServiceErr_CronJob    = "3-"
 )

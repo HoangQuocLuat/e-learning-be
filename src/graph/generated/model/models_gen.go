@@ -47,7 +47,7 @@ type Query struct {
 
 type Schedules struct {
 	ID            string    `json:"id"`
-	DayOfWeek     time.Time `json:"day_of_week"`
+	DayOfWeek     int       `json:"day_of_week"`
 	StartDate     time.Time `json:"start_date"`
 	EndDate       time.Time `json:"end_date"`
 	StartTime     time.Time `json:"start_time"`
@@ -61,13 +61,13 @@ func (Schedules) IsEntity() {}
 
 type SchedulesAdd struct {
 	ClassID       string `json:"class_id"`
-	DayOfWeek     string `json:"day_of_week"`
+	DayOfWeek     int    `json:"day_of_week"`
 	StartDate     string `json:"start_date"`
 	EndDate       string `json:"end_date"`
 	StartTime     string `json:"start_time"`
 	EndTime       string `json:"end_time"`
 	Description   string `json:"description"`
-	SchedulesType string `json:"schedules_type"`
+	SchedulesType int    `json:"schedules_type"`
 }
 
 type SchedulesDelete struct {
@@ -98,6 +98,7 @@ type User struct {
 func (User) IsEntity() {}
 
 type UserAdd struct {
+	ClassID   string `json:"class_id"`
 	UserName  string `json:"user_name"`
 	Password  string `json:"password"`
 	Role      string `json:"role"`

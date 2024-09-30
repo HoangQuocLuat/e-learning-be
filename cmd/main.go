@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"e-learning/config"
+	"e-learning/src/cronjob"
 	"e-learning/src/database"
+	kafka_config "e-learning/src/kafka"
 	"e-learning/src/server"
 	"log"
 	"os"
@@ -53,7 +55,7 @@ func main() {
 				&cli.StringFlag{
 					Name:    "addr-graph",
 					Aliases: []string{"address-graph"},
-					Value:   "0.0.0.0:8080",
+					Value:   "0.0.0.0:8989",
 					Usage:   "address for serve graph",
 				},
 			},
@@ -97,6 +99,8 @@ func Serve(c *cli.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	kafka_config.InitKafkaProducer()
+	go func() { cronjob.NotifyWithTimeBySchedules() }()
 
 	return server.ServeGraph(c.Context, c.String("addr-graph"))
 }

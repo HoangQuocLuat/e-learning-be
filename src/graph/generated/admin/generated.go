@@ -698,13 +698,13 @@ input ClassByID {
 }`, BuiltIn: false},
 	{Name: "../../schema/model/schedules.input.graphql", Input: `input SchedulesAdd {
     class_id: String!
-    day_of_week: String!
+    day_of_week: Int!
     start_date: String!
     end_date: String!
     start_time: String!
     end_time: String!
     description: String!
-    schedules_type: String!
+    schedules_type: Int!
 }
 
 input SchedulesUpdate {
@@ -720,6 +720,7 @@ input SchedulesDelete {
 }
 `, BuiltIn: false},
 	{Name: "../../schema/model/user.input.graphql", Input: `input UserAdd {
+    class_id: String!
     user_name: String!
     password: String!
     role: String!
@@ -772,14 +773,14 @@ type Pagination {
 }`, BuiltIn: false},
 	{Name: "../../schema/model/schedules.type.graphql", Input: `type Schedules @key(fields: "id") {
     id: String!
-    day_of_week: Time!
+    day_of_week: Int!
     start_date: Time!
     end_date: Time!
     start_time: Time!
     end_time: Time!
     schedules_type: String!
     description: String!
-    class: Class! @provides(fields: "id")
+    class: Class! @provides(fields: "id class_name")
 }`, BuiltIn: false},
 	{Name: "../../schema/model/user.type.graphql", Input: `type User @key(fields: "id") {
     id: String!
@@ -2854,9 +2855,9 @@ func (ec *executionContext) _Schedules_day_of_week(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Schedules_day_of_week(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2866,7 +2867,7 @@ func (ec *executionContext) fieldContext_Schedules_day_of_week(ctx context.Conte
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5678,7 +5679,7 @@ func (ec *executionContext) unmarshalInputSchedulesAdd(ctx context.Context, obj 
 			it.ClassID = data
 		case "day_of_week":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("day_of_week"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5720,7 +5721,7 @@ func (ec *executionContext) unmarshalInputSchedulesAdd(ctx context.Context, obj 
 			it.Description = data
 		case "schedules_type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("schedules_type"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5820,13 +5821,20 @@ func (ec *executionContext) unmarshalInputUserAdd(ctx context.Context, obj inter
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"user_name", "password", "role", "name", "date_birth", "phone", "email", "address"}
+	fieldsInOrder := [...]string{"class_id", "user_name", "password", "role", "name", "date_birth", "phone", "email", "address"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "class_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("class_id"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClassID = data
 		case "user_name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_name"))
 			data, err := ec.unmarshalNString2string(ctx, v)

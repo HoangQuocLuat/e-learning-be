@@ -29,6 +29,8 @@ type Config struct {
 
 	AccessTokenType  string
 	RefreshTokenType string
+
+	KafkaAddr string
 }
 
 func Get() Config {

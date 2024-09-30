@@ -15,6 +15,7 @@ import (
 // AccountAdd is the resolver for the accountAdd field.
 func (r *mutationResolver) UserAdd(ctx context.Context, data *graph_model.UserAdd) (*graph_model.User, error) {
 	input := &service_account.UserAddCommand{
+		ClassID:   data.ClassID,
 		UserName:  data.UserName,
 		Password:  data.Password,
 		Role:      data.Role,

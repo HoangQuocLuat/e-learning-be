@@ -16,6 +16,7 @@ func (r *mutationResolver) SchedulesAdd(ctx context.Context, data *graph_model.S
 	input := &service_schedules.SchedulesAddCommand{
 		ClassID:       data.ClassID,
 		Description:   data.Description,
+		DayOfWeek:     data.DayOfWeek,
 		SchedulesType: data.SchedulesType,
 		StartDate:     data.StartDate,
 		EndDate:       data.EndDate,
@@ -62,5 +63,27 @@ func (r *queryResolver) Schedules(ctx context.Context, classID string) ([]graph_
 
 // SchedulesList is the resolver for the schedulesList field.
 func (r *queryResolver) SchedulesList(ctx context.Context) ([]graph_model.Schedules, error) {
-	panic(fmt.Errorf("not implemented: SchedulesList - schedulesList"))
+	result, err := service_schedules.SchedulesGetList(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	var schedulesList []graph_model.Schedules
+	for _, s := range result {
+		schedulesList = append(schedulesList, graph_model.Schedules{
+			ID:            s.ID,
+			Description:   s.Description,
+			StartDate:     s.StartDate,
+			EndDate:       s.EndDate,
+			StartTime:     s.StartTime,
+			EndTime:       s.EndTime,
+			DayOfWeek:     s.DayOfWeek,
+			SchedulesType: s.SchedulesType,
+			Class: &graph_model.Class{
+				ID:        s.ClassID,
+				ClassName: s.ClassName,
+			},
+		})
+	}
+
+	return schedulesList, nil
 }

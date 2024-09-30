@@ -15,10 +15,10 @@ import (
 )
 
 type UserAddCommand struct {
-	UserName string
-	Password string
-	Role     string
-
+	ClassID   string
+	UserName  string
+	Password  string
+	Role      string
 	Name      string
 	DateBirth string
 	Phone     string
@@ -57,8 +57,8 @@ func UserAdd(ctx context.Context, c *UserAddCommand) (result *model_user.User, e
 	}
 
 	result = &model_user.User{
-		ID: primitive.NewObjectID().Hex(),
-
+		ID:        primitive.NewObjectID().Hex(),
+		ClassID:   c.ClassID,
 		UserName:  c.UserName,
 		Password:  string(password),
 		Role:      c.Role,
@@ -68,7 +68,6 @@ func UserAdd(ctx context.Context, c *UserAddCommand) (result *model_user.User, e
 		Phone:     c.Phone,
 		Email:     c.Email,
 		Address:   c.Address,
-
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		LogsStatus: []model_user.LogStatus{
