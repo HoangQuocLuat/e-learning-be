@@ -8,6 +8,7 @@ import (
 	"context"
 	graph_model "e-learning/src/graph/generated/model"
 	service_account "e-learning/src/service/user"
+	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
 )
@@ -32,6 +33,11 @@ func (r *mutationResolver) UserAdd(ctx context.Context, data *graph_model.UserAd
 	}
 
 	return result.ConvertToModelGraph(), nil
+}
+
+// UserUpdate is the resolver for the userUpdate field.
+func (r *mutationResolver) UserUpdate(ctx context.Context, data *graph_model.UserUpdateByAdmin) (*graph_model.User, error) {
+	panic(fmt.Errorf("not implemented: UserUpdate - userUpdate"))
 }
 
 // AccountDelete is the resolver for the AccountDelete field.

@@ -32,6 +32,11 @@ type ClassDelete struct {
 	ID string `json:"id"`
 }
 
+type ClassUpdate struct {
+	ID   string  `json:"id"`
+	Name *string `json:"name,omitempty"`
+}
+
 type Mutation struct {
 }
 
@@ -76,6 +81,10 @@ type SchedulesDelete struct {
 
 type SchedulesUpdate struct {
 	ID            string  `json:"id"`
+	ClassID       string  `json:"class_id"`
+	DayOfWeek     *int    `json:"day_of_week,omitempty"`
+	StartDate     *string `json:"start_date,omitempty"`
+	EndDate       *string `json:"end_date,omitempty"`
 	StartTime     *string `json:"start_time,omitempty"`
 	EndTime       *string `json:"end_time,omitempty"`
 	Description   *string `json:"description,omitempty"`
@@ -92,6 +101,7 @@ type User struct {
 	Phone     string `json:"phone"`
 	Email     string `json:"email"`
 	Address   string `json:"address"`
+	Avatar    string `json:"avatar"`
 	Class     *Class `json:"class"`
 }
 
@@ -124,11 +134,22 @@ type UserPagination struct {
 	Paging Pagination `json:"paging"`
 }
 
-type UserUpdate struct {
+type UserUpdateByAdmin struct {
+	Password  *string `json:"password,omitempty"`
 	Name      *string `json:"name,omitempty"`
 	DateBirth *string `json:"date_birth,omitempty"`
 	Phone     *string `json:"phone,omitempty"`
 	Email     *string `json:"email,omitempty"`
 	Address   *string `json:"address,omitempty"`
-	Status    *int    `json:"status,omitempty"`
+	Role      *string `json:"role,omitempty"`
+	UserName  *string `json:"user_name,omitempty"`
+}
+
+type UserUpdateByUser struct {
+	Password  *string `json:"password,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	DateBirth *string `json:"date_birth,omitempty"`
+	Phone     *string `json:"phone,omitempty"`
+	Email     *string `json:"email,omitempty"`
+	Address   *string `json:"address,omitempty"`
 }

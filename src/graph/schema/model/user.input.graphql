@@ -10,13 +10,24 @@ input UserAdd {
     address: String!
 }
 
-input UserUpdate {
+input UserUpdateByAdmin{
+    password: String
     name: String
     date_birth: String
     phone: String
     email: String
     address: String
-    status: Int
+    role: String
+    user_name: String
+}
+
+input UserUpdateByUser{
+    password: String
+    name: String
+    date_birth: String
+    phone: String
+    email: String
+    address: String
 }
 
 input UserChangePassword {

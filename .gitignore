@@ -37,3 +37,4 @@ cmd/log
 *.ntvs*
 *.njsproj
 *.sln
+serviceAcc.json

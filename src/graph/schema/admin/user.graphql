@@ -9,5 +9,6 @@ extend type Query {
 
 extend type Mutation {
     userAdd(data: UserAdd): User!
+    userUpdate(data: UserUpdateByAdmin): User!
     userDelete(data: UserDelete): Boolean!
 }

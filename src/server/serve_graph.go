@@ -7,6 +7,7 @@ import (
 	resolver_admin "e-learning/src/graph/resolver/admin"
 	resolver_user "e-learning/src/graph/resolver/user"
 	"e-learning/src/middleware"
+	service_user "e-learning/src/service/user"
 	"log"
 	"net"
 	"net/http"
@@ -65,6 +66,9 @@ func v1(r chi.Router) {
 		r.With(middleware.Middleware()).Route("/graphql", func(r chi.Router) {
 			r.Handle("/admin", srvAdmin)
 			r.Handle("/user", srvUser)
+		})
+		r.Route("/upload", func(r chi.Router) {
+			r.Post("/image", service_user.UploadImage)
 		})
 	})
 }

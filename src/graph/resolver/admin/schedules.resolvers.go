@@ -37,6 +37,11 @@ func (r *mutationResolver) SchedulesDelete(ctx context.Context, data *graph_mode
 	panic(fmt.Errorf("not implemented: SchedulesDelete - schedulesDelete"))
 }
 
+// SchedulesUpdate is the resolver for the schedulesUpdate field.
+func (r *mutationResolver) SchedulesUpdate(ctx context.Context, data *graph_model.SchedulesUpdate) (*graph_model.Schedules, error) {
+	panic(fmt.Errorf("not implemented: SchedulesUpdate - schedulesUpdate"))
+}
+
 // Schedules is the resolver for the schedules field.
 func (r *queryResolver) Schedules(ctx context.Context, classID string) ([]graph_model.Schedules, error) {
 	input := &service_schedules.SchedulesByIDCommand{

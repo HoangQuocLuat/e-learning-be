@@ -8,6 +8,7 @@ type User @key(fields: "id") {
     phone: String!
     email: String!
     address: String!
+    avatar: String!
     class: Class! @provides(fields: "id")
 }
 

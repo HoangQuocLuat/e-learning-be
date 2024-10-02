@@ -9,7 +9,13 @@ import (
 	generated_admin "e-learning/src/graph/generated/admin"
 	graph_model "e-learning/src/graph/generated/model"
 	service_class "e-learning/src/service/class"
+	"fmt"
 )
+
+// ClassUpdate is the resolver for the classUpdate field.
+func (r *mutationResolver) ClassUpdate(ctx context.Context, data *graph_model.ClassUpdate) (*graph_model.Class, error) {
+	panic(fmt.Errorf("not implemented: ClassUpdate - classUpdate"))
+}
 
 // ClassAdd is the resolver for the classAdd field.
 func (r *mutationResolver) ClassAdd(ctx context.Context, data *graph_model.ClassAdd) (*graph_model.Class, error) {

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "./authenticator";
+
+service AuthenticatorService {
+    rpc Infor(InforRequest) returns (InforResponse);
+    rpc TokenVerify(TokenVerifyReqest) returns (TokenVerifyResponse);
+}
+
+message TokenVerifyReqest {
+    string jwtToken = 1;
+    
+}
+
+message TokenVerifyResponse {
+    string userId = 1;
+    string role = 2;
+}
+
+
+message InforRequest {
+    string id = 1;
+}
+
+message InforResponse {
+    string fullName = 1;
+    string email = 2;
+    string role = 3;
+    string address =4;
+}

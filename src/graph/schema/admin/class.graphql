@@ -3,6 +3,7 @@ extend type Query {
 }
 
 extend type Mutation {
+    classUpdate(data: ClassUpdate): Class!
     classAdd(data: ClassAdd): Class!
     classDelete(data: ClassDelete): Boolean!
 }

@@ -25,7 +25,7 @@ func (r *queryResolver) AuthAdminLogin(ctx context.Context, userName string, pas
 		return &graph_model.AuthLoginResponse{}, err
 	}
 
-	if role != model_user.RoleAdmin && role != model_user.RoleSuperAdmin {
+	if role != model_user.RoleAdmin {
 		return &graph_model.AuthLoginResponse{}, fmt.Errorf("permission denied")
 	}
 

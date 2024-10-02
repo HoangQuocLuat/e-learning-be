@@ -6,6 +6,11 @@ input ClassDelete {
     id: String!
 }
 
+input ClassUpdate {
+    id: String!
+    name: String
+}
+
 input ClassByID {
     id: String!
 }

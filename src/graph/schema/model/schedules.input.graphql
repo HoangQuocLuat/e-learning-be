@@ -11,6 +11,10 @@ input SchedulesAdd {
 
 input SchedulesUpdate {
     id: String!
+    class_id: String!
+    day_of_week: Int
+    start_date: String
+    end_date: String
     start_time: String
     end_time: String
     description: String

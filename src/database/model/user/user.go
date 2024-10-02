@@ -12,9 +12,9 @@ const (
 )
 
 const (
-	RoleSuperAdmin = "super-admin"
-	RoleAdmin      = "admin"
-	RoleUser       = "user"
+	// RoleSuperAdmin = "super-admin"
+	RoleAdmin = "admin"
+	RoleUser  = "user"
 )
 
 type User struct {
