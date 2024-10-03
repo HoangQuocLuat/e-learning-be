@@ -1,4 +1,4 @@
-package model_account
+package model_user
 
 import (
 	"time"
@@ -30,6 +30,7 @@ type User struct {
 	Address    string      `json:"address" bson:"address"`
 	Role       string      `json:"role" bson:"role"`
 	Status     int         `json:"status" bson:"status"`
+	Avatar     string      `json:"avatar" bson:"avatar"`
 	CreatedAt  time.Time   `json:"created_at" bson:"created_at"`
 	UpdatedAt  time.Time   `json:"updated_at" bson:"updated_at"`
 	LogsStatus []LogStatus `json:"logs_status" bson:"logs_status,omitempty"`
@@ -51,6 +52,7 @@ func (a *User) ConvertToModelGraph() *graphModel.User {
 		Phone:     a.Phone,
 		Email:     a.Email,
 		Address:   a.Address,
+		Avatar:    a.Avatar,
 		Class: &graphModel.Class{
 			ID:        a.ClassID,
 			ClassName: a.ClassName,
