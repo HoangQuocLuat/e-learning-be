@@ -15,7 +15,7 @@ import (
 
 	src_const "e-learning/src/const"
 	model_schedules "e-learning/src/database/model/schedules"
-	model_account "e-learning/src/database/model/user"
+	model_user "e-learning/src/database/model/user"
 )
 
 type SchedulesAddCommand struct {
@@ -111,7 +111,7 @@ func GetEmailsByClassID(ctx context.Context, classID string) ([]string, error) {
 
 	var emails []string
 	for cursor.Next(ctx) {
-		var user model_account.User
+		var user model_user.User
 		if err := cursor.Decode(&user); err != nil {
 			codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
 			service.AddError(ctx, "", "", codeErr)

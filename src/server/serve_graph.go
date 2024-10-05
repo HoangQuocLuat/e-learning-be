@@ -7,6 +7,7 @@ import (
 	resolver_admin "e-learning/src/graph/resolver/admin"
 	resolver_user "e-learning/src/graph/resolver/user"
 	"e-learning/src/middleware"
+	service_rest "e-learning/src/service/service.rest"
 	service_user "e-learning/src/service/user"
 	"log"
 	"net"
@@ -69,6 +70,9 @@ func v1(r chi.Router) {
 		})
 		r.Route("/upload", func(r chi.Router) {
 			r.Post("/image", service_user.UploadImage)
+		})
+		r.Route("/checkFace", func(r chi.Router) {
+			r.Get("/getList", service_rest.CheckFace)
 		})
 	})
 }

@@ -31,7 +31,6 @@ func GetClassByID(ctx context.Context, classID string) (*model_class.Class, erro
 
 // Hàm lấy danh sách Schedules kèm thông tin Class
 func SchedulesGetList(ctx context.Context, s *SchedulesGetListCommand) (results []*model_schedules.Schedules, err error) {
-	// Truy vấn lấy tất cả các bản ghi schedules
 	cursor, err := collection.Schedules().Collection().Find(ctx, bson.M{})
 	if err != nil {
 		codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
@@ -40,7 +39,6 @@ func SchedulesGetList(ctx context.Context, s *SchedulesGetListCommand) (results 
 	}
 	defer cursor.Close(ctx)
 
-	// Duyệt qua từng bản ghi schedules
 	for cursor.Next(ctx) {
 		var schedules model_schedules.Schedules
 		err := cursor.Decode(&schedules)
@@ -50,7 +48,6 @@ func SchedulesGetList(ctx context.Context, s *SchedulesGetListCommand) (results 
 			return results, fmt.Errorf(codeErr)
 		}
 
-		// Lấy thông tin class dựa trên class_id trong mỗi schedules
 		class, err := GetClassByID(ctx, schedules.ClassID)
 		if err != nil {
 			codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
@@ -58,22 +55,18 @@ func SchedulesGetList(ctx context.Context, s *SchedulesGetListCommand) (results 
 			return results, fmt.Errorf(codeErr)
 		}
 
-		// Nếu class không null, gán thông tin class vào schedules
 		if class != nil {
 			schedules.ClassName = class.ClassName
 		}
 
-		// Thêm schedules (kèm thông tin class) vào kết quả trả về
 		results = append(results, &schedules)
 	}
 
-	// Kiểm tra lỗi từ cursor
 	if err := cursor.Err(); err != nil {
 		codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
 		service.AddError(ctx, "", "", codeErr)
 		return results, fmt.Errorf(codeErr)
 	}
 
-	// Trả về danh sách schedules kèm class
 	return results, nil
 }
