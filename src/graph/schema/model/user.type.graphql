@@ -10,6 +10,7 @@ type User @key(fields: "id") {
     address: String!
     avatar: String!
     class: Class! @provides(fields: "id")
+    tuition: Tuition! @provides(fields: "id")
 }
 
 type UserPagination {

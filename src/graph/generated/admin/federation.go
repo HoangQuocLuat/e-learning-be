@@ -80,6 +80,26 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 		}()
 
 		switch typeName {
+		case "Attendance":
+			resolverName, err := entityResolverNameForAttendance(ctx, rep)
+			if err != nil {
+				return fmt.Errorf(`finding resolver for Entity "Attendance": %w`, err)
+			}
+			switch resolverName {
+
+			case "findAttendanceByID":
+				id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+				if err != nil {
+					return fmt.Errorf(`unmarshalling param 0 for findAttendanceByID(): %w`, err)
+				}
+				entity, err := ec.resolvers.Entity().FindAttendanceByID(ctx, id0)
+				if err != nil {
+					return fmt.Errorf(`resolving Entity "Attendance": %w`, err)
+				}
+
+				list[idx[i]] = entity
+				return nil
+			}
 		case "Class":
 			resolverName, err := entityResolverNameForClass(ctx, rep)
 			if err != nil {
@@ -115,6 +135,26 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 				entity, err := ec.resolvers.Entity().FindSchedulesByID(ctx, id0)
 				if err != nil {
 					return fmt.Errorf(`resolving Entity "Schedules": %w`, err)
+				}
+
+				list[idx[i]] = entity
+				return nil
+			}
+		case "Tuition":
+			resolverName, err := entityResolverNameForTuition(ctx, rep)
+			if err != nil {
+				return fmt.Errorf(`finding resolver for Entity "Tuition": %w`, err)
+			}
+			switch resolverName {
+
+			case "findTuitionByID":
+				id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+				if err != nil {
+					return fmt.Errorf(`unmarshalling param 0 for findTuitionByID(): %w`, err)
+				}
+				entity, err := ec.resolvers.Entity().FindTuitionByID(ctx, id0)
+				if err != nil {
+					return fmt.Errorf(`resolving Entity "Tuition": %w`, err)
 				}
 
 				list[idx[i]] = entity
@@ -209,6 +249,23 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 	}
 }
 
+func entityResolverNameForAttendance(ctx context.Context, rep map[string]interface{}) (string, error) {
+	for {
+		var (
+			m   map[string]interface{}
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		m = rep
+		if _, ok = m["id"]; !ok {
+			break
+		}
+		return "findAttendanceByID", nil
+	}
+	return "", fmt.Errorf("%w for Attendance", ErrTypeNotFound)
+}
+
 func entityResolverNameForClass(ctx context.Context, rep map[string]interface{}) (string, error) {
 	for {
 		var (
@@ -241,6 +298,23 @@ func entityResolverNameForSchedules(ctx context.Context, rep map[string]interfac
 		return "findSchedulesByID", nil
 	}
 	return "", fmt.Errorf("%w for Schedules", ErrTypeNotFound)
+}
+
+func entityResolverNameForTuition(ctx context.Context, rep map[string]interface{}) (string, error) {
+	for {
+		var (
+			m   map[string]interface{}
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		m = rep
+		if _, ok = m["id"]; !ok {
+			break
+		}
+		return "findTuitionByID", nil
+	}
+	return "", fmt.Errorf("%w for Tuition", ErrTypeNotFound)
 }
 
 func entityResolverNameForUser(ctx context.Context, rep map[string]interface{}) (string, error) {

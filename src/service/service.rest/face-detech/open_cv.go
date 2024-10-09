@@ -4,75 +4,97 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"time"
 
 	"gocv.io/x/gocv"
 )
 
-func DetectFace(deviceID int, xmlFile string) error {
-	// open webcam
+func DetectFace(deviceID int, xmlFile string) ([]byte, error) {
+	// mở camera
 	webcam, err := gocv.VideoCaptureDevice(deviceID)
 	if err != nil {
-		return fmt.Errorf("error opening video capture device: %v", err)
+		return nil, fmt.Errorf("error opening video capture device: %v", err)
 	}
 	defer webcam.Close()
 
-	// open display window
+	// mở cửa sổ hiển thị
 	window := gocv.NewWindow("Face Detect")
 	defer window.Close()
 
-	// prepare image matrix
+	// chuẩn bị ma trận ảnh
 	img := gocv.NewMat()
 	defer img.Close()
 
-	// color for the rect when faces detected
+	// màu cho hình chữ nhật khi phát hiện khuôn mặt
 	blue := color.RGBA{0, 0, 255, 0}
 
-	// load classifier to recognize faces
+	// load classifier nhận diện khuôn mặt
 	classifier := gocv.NewCascadeClassifier()
 	defer classifier.Close()
 
 	if !classifier.Load(xmlFile) {
-		return fmt.Errorf("error reading cascade file: %v", xmlFile)
+		return nil, fmt.Errorf("error reading cascade file: %v", xmlFile)
 	}
 
-	fmt.Printf("start reading camera device: %v\n", deviceID)
+	countFrame := 0
+	fmt.Printf("Start reading camera device: %v\n", deviceID)
+
 	for {
 		if ok := webcam.Read(&img); !ok {
-			return fmt.Errorf("cannot read device %d", deviceID)
+			return nil, fmt.Errorf("cannot read device %d", deviceID)
 		}
 		if img.Empty() {
 			continue
 		}
 
-		// detect faces
-		rects := classifier.DetectMultiScale(img)
-		fmt.Printf("found %d faces\n", len(rects))
-
-		for _, r := range rects {
-			// Cắt phần hình ảnh trong vùng hình chữ nhật 'r'
-			face := img.Region(r)
-			defer face.Close() // Giải phóng vùng nhớ của `Region`
-
-			// Hiển thị khuôn mặt đã cắt
-			window2 := gocv.NewWindow("Face")
-			defer window2.Close()
-			window2.IMShow(face)
-
-			// Tô màu hình chữ nhật lên ảnh gốc
-			gocv.Rectangle(&img, r, blue, 3)
-
-			// Tạo text "Human"
-			size := gocv.GetTextSize("Human", gocv.FontHersheyPlain, 1.2, 2)
-			pt := image.Pt(r.Min.X+(r.Min.X/2)-(size.X/2), r.Min.Y-2)
-			gocv.PutText(&img, "Human", pt, gocv.FontHersheyPlain, 1.2, blue, 2)
+		// Tăng biến đếm khung hình
+		countFrame++
+		if countFrame < 20 { // Đợi 20 khung hình trước khi bắt đầu nhận diện
+			gocv.PutText(&img, "Please wait...", image.Pt(10, 30), gocv.FontHersheyPlain, 1.2, blue, 2)
+			window.IMShow(img)
+			window.WaitKey(1)
+			continue
 		}
 
-		// show the image in the window, and wait 1 millisecond
+		// phát hiện khuôn mặt
+		rects := classifier.DetectMultiScale(img)
+
+		if len(rects) > 0 { // Khi có khuôn mặt
+			for _, r := range rects {
+				// Cắt phần khuôn mặt
+				face := img.Region(r)
+				defer face.Close()
+
+				// Hiển thị khuôn mặt đã cắt
+				window2 := gocv.NewWindow("Face")
+				defer window2.Close()
+				window2.IMShow(face)
+
+				// Tô màu chữ nhật lên ảnh gốc
+				gocv.Rectangle(&img, r, blue, 3)
+
+				// Viết chữ "Human"
+				size := gocv.GetTextSize("Human", gocv.FontHersheyPlain, 1.2, 2)
+				pt := image.Pt(r.Min.X+(r.Min.X/2)-(size.X/2), r.Min.Y-2)
+				gocv.PutText(&img, "Human", pt, gocv.FontHersheyPlain, 1.2, blue, 2)
+
+				// Chuyển hình ảnh thành []byte và trả về
+				imageBytes := img.ToBytes()
+				return imageBytes, nil
+			}
+		} else { // Không phát hiện khuôn mặt, tiếp tục
+			gocv.PutText(&img, "No face detected, waiting...", image.Pt(10, 30), gocv.FontHersheyPlain, 1.2, blue, 2)
+			window.IMShow(img)
+			window.WaitKey(1)
+			time.Sleep(1 * time.Second) // Chờ 1 giây trước khi kiểm tra tiếp
+		}
+
+		// Hiển thị hình ảnh và đợi 1ms
 		window.IMShow(img)
-		key := window.WaitKey(1)
-		if key == 27 { // 27 là mã ASCII của phím Esc
+		if window.WaitKey(1) == 27 { // Dừng khi nhấn phím Esc
 			break
 		}
 	}
-	return nil
+
+	return nil, fmt.Errorf("stopped manually")
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"e-learning/src/database/collection"
 	model_user "e-learning/src/database/model/user"
+	face_config "e-learning/src/face-config"
 	"io"
 	"log"
 	"net/http"
@@ -12,12 +13,9 @@ import (
 	"cloud.google.com/go/firestore"
 	cloud "cloud.google.com/go/storage"
 	firebase "firebase.google.com/go"
-	"github.com/Kagami/go-face"
 	"go.mongodb.org/mongo-driver/bson"
 	"google.golang.org/api/option"
 )
-
-const dataDir = "/home/ad/Documents/e-learning/e-learning-be/train"
 
 type ImageStructure struct {
 	ImagePath string `json:"image-path"`
@@ -27,100 +25,93 @@ type ImageStructure struct {
 func UploadImage(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	sa := option.WithCredentialsFile("../serviceAcc.json")
-	app, err := firebase.NewApp(ctx, nil, sa)
-	if err != nil {
-		log.Fatalln("sssss", err)
-	}
-	client, err := app.Firestore(ctx)
-	if err != nil {
-		log.Fatalln("aaaa", err)
-	}
-	storage, err := cloud.NewClient(ctx, sa)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	bucket := "golang-upload.appspot.com"
 
-	//lấy file ảnh từ người dùng
+	// Lấy file ảnh từ người dùng
 	file, handler, err := r.FormFile("image")
-	r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		log.Println(err)
+		log.Println("Error retrieving the file:", err)
+		http.Error(w, "Unable to upload image", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
-
-	// Đọc dữ liệu ảnh vào một biến bytes.Buffer
-	var imgData bytes.Buffer
-	_, err = io.Copy(&imgData, file)
-	if err != nil {
-		log.Println("Error copying image data:", err)
-		return
-	}
-
 	imagePath := handler.Filename
 
-	bucket := "golang-upload.appspot.com"
+	// Tạo một buffer để lưu trữ dữ liệu ảnh và sử dụng TeeReader để copy vào Firebase đồng thời lưu vào buffer
+	var imgData bytes.Buffer
+	tee := io.TeeReader(file, &imgData)
 
-	wc := storage.Bucket(bucket).Object(imagePath).NewWriter(ctx)
-	_, err = io.Copy(wc, file)
+	// Khởi tạo Firebase app
+	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
-		log.Println(err)
-		return
+		log.Fatalln("Error initializing Firebase app:", err)
+	}
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatalln("Error initializing Firestore client:", err)
+	}
+	storage, err := cloud.NewClient(ctx, sa)
+	if err != nil {
+		log.Fatalln("Error initializing Storage client:", err)
+	}
 
+	// Ghi ảnh vào Firebase Storage
+	wc := storage.Bucket(bucket).Object(imagePath).NewWriter(ctx)
+	_, err = io.Copy(wc, tee)
+	if err != nil {
+		log.Println("Error copying to Firebase:", err)
+		http.Error(w, "Error uploading image", http.StatusInternalServerError)
+		return
 	}
 	if err := wc.Close(); err != nil {
-		log.Println(err)
+		log.Println("Error closing Firebase writer:", err)
+		http.Error(w, "Error finalizing image upload", http.StatusInternalServerError)
 		return
 	}
 
-	res, err := CreateImageUrl(imagePath, bucket, ctx, client)
+	// Tạo URL cho image avatar từ Firebase
+	imageURL, err := CreateImageUrl(imagePath, bucket, ctx, client)
 	if err != nil {
-		log.Println("dđ", err)
-		return
-	}
-	userId := r.FormValue("user_id")
-
-	rec, err := face.NewRecognizer(dataDir)
-	if err != nil {
-		log.Println("Cannot initialize recognizer:", err)
+		log.Println("Error creating image URL:", err)
+		http.Error(w, "Unable to generate image URL", http.StatusInternalServerError)
 		return
 	}
 
-	userFace, err := rec.RecognizeSingle(imgData.Bytes())
+	// Nhận diện khuôn mặt từ dữ liệu ảnh
+	userFace, err := face_config.Recognizer.RecognizeSingle(imgData.Bytes())
 	if err != nil {
-		log.Fatalf("Can't recognize Face: %v", err)
+		log.Fatalf("Can't recognize face: %v", err)
 	}
 	if userFace == nil {
-		log.Fatalf("Not a single face on the Face")
+		log.Fatalf("Not a single face detected")
 	}
 
+	// Chuyển đổi descriptor khuôn mặt thành slice interface{} để lưu vào DB
 	descriptorInterface := make([]interface{}, len(userFace.Descriptor))
 	for i, v := range userFace.Descriptor {
 		descriptorInterface[i] = v
 	}
-	update := bson.M{
-		"$set": bson.M{
-			"descriptor_avatar": descriptorInterface,
-		},
-	}
-	_, err = collection.User().Collection().UpdateOne(ctx, bson.M{"_id": userId}, update)
 
-	if err != nil {
-		log.Println("Error updating user")
+	// Lấy user_id từ form
+	userId := r.FormValue("user_id")
+	if userId == "" {
+		http.Error(w, "User ID is required", http.StatusBadRequest)
 		return
 	}
 
-	// Lưu URL hình ảnh vào cơ sở dữ liệu
-	err = SaveUrlImageIntoDb(ctx, res, userId)
+	// Lưu URL hình ảnh và descriptor vào cơ sở dữ liệu
+	err = SaveUrlImageIntoDb(ctx, imageURL, descriptorInterface, userId)
 	if err != nil {
-		log.Println("Failed to save image URL into DB", err)
+		log.Println("Error saving image URL to DB:", err)
+		http.Error(w, "Unable to save image information", http.StatusInternalServerError)
 		return
 	}
 
+	// Trả về URL ảnh cho người dùng
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(res))
+	w.Write([]byte(imageURL))
 
-	log.Println("Successfully uploaded and saved image", res)
+	log.Println("Successfully uploaded and saved image:", imageURL)
 }
 
 func CreateImageUrl(imagePath string, bucket string, ctx context.Context, client *firestore.Client) (string, error) {
@@ -137,23 +128,24 @@ func CreateImageUrl(imagePath string, bucket string, ctx context.Context, client
 	return imageStructure.URLBucket, nil
 }
 
-func SaveUrlImageIntoDb(ctx context.Context, urlImage string, userId string) error {
+func SaveUrlImageIntoDb(ctx context.Context, urlImage string, imgDesc []interface{}, userId string) error {
 	var user *model_user.User
 	err := collection.User().Collection().FindOne(ctx, bson.M{"_id": userId}).Decode(&user)
 	if err != nil {
-		log.Println("Error decoding find user_id", err)
+		log.Println("Error decoding user:", err)
+		return err
 	}
 
 	update := bson.M{
 		"$set": bson.M{
-			"avatar": urlImage,
+			"avatar":            urlImage,
+			"descriptor_avatar": imgDesc,
 		},
 	}
 
 	_, err = collection.User().Collection().UpdateOne(ctx, bson.M{"_id": userId}, update)
-
 	if err != nil {
-		log.Println("Error updating user")
+		log.Println("Error updating user:", err)
 		return err
 	}
 

@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetImagesByClassID(ctx context.Context, classID string) ([]string, error) {
+func GetImagesDescByClassID(ctx context.Context, classID string) (res []*model_user.User, err error) {
 	cursor, err := collection.User().Collection().Find(ctx, bson.M{"class_id": classID})
 	if err != nil {
 		codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
@@ -20,21 +20,23 @@ func GetImagesByClassID(ctx context.Context, classID string) ([]string, error) {
 	}
 	defer cursor.Close(ctx)
 
-	var images []string
 	for cursor.Next(ctx) {
-		var user model_user.User
-		if err := cursor.Decode(&user); err != nil {
+		var users model_user.User
+		err := cursor.Decode(&users)
+		if err != nil {
 			codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
 			service.AddError(ctx, "", "", codeErr)
-			return nil, fmt.Errorf("%s: %v", codeErr, err)
+			return nil, fmt.Errorf(codeErr)
 		}
-		images = append(images, user.Avatar)
+
+		res = append(res, &users)
 	}
 
 	if err := cursor.Err(); err != nil {
 		codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
 		service.AddError(ctx, "", "", codeErr)
-		return nil, fmt.Errorf("%s: %v", codeErr, err)
+		return nil, fmt.Errorf(codeErr)
 	}
-	return images, nil
+
+	return
 }

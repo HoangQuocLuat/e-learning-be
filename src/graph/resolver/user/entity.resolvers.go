@@ -11,6 +11,11 @@ import (
 	"fmt"
 )
 
+// FindAttendanceByID is the resolver for the findAttendanceByID field.
+func (r *entityResolver) FindAttendanceByID(ctx context.Context, id string) (*graph_model.Attendance, error) {
+	panic(fmt.Errorf("not implemented: FindAttendanceByID - findAttendanceByID"))
+}
+
 // FindClassByID is the resolver for the findClassByID field.
 func (r *entityResolver) FindClassByID(ctx context.Context, id string) (*graph_model.Class, error) {
 	panic(fmt.Errorf("not implemented: FindClassByID - findClassByID"))
@@ -19,6 +24,11 @@ func (r *entityResolver) FindClassByID(ctx context.Context, id string) (*graph_m
 // FindSchedulesByID is the resolver for the findSchedulesByID field.
 func (r *entityResolver) FindSchedulesByID(ctx context.Context, id string) (*graph_model.Schedules, error) {
 	panic(fmt.Errorf("not implemented: FindSchedulesByID - findSchedulesByID"))
+}
+
+// FindTuitionByID is the resolver for the findTuitionByID field.
+func (r *entityResolver) FindTuitionByID(ctx context.Context, id string) (*graph_model.Tuition, error) {
+	panic(fmt.Errorf("not implemented: FindTuitionByID - findTuitionByID"))
 }
 
 // FindUserByID is the resolver for the findUserByID field.

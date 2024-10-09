@@ -6,6 +6,15 @@ import (
 	"time"
 )
 
+type Attendance struct {
+	ID           string     `json:"id"`
+	TimeCheckIn  *time.Time `json:"time_check_in,omitempty"`
+	TimeCheckOut *time.Time `json:"time_check_out,omitempty"`
+	User         User       `json:"user"`
+}
+
+func (Attendance) IsEntity() {}
+
 type AuthLoginResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -91,18 +100,33 @@ type SchedulesUpdate struct {
 	SchedulesType *string `json:"schedules_type,omitempty"`
 }
 
+type Tuition struct {
+	ID           string  `json:"id"`
+	UserID       string  `json:"user_id"`
+	Price        float64 `json:"price"`
+	Status       string  `json:"status"`
+	LessonsCount int     `json:"lessons_count"`
+}
+
+func (Tuition) IsEntity() {}
+
+type TuitionAdd struct {
+	UserID string `json:"user_id"`
+}
+
 type User struct {
-	ID        string `json:"id"`
-	UserName  string `json:"user_name"`
-	Role      string `json:"role"`
-	Status    int    `json:"status"`
-	Name      string `json:"name"`
-	DateBirth string `json:"date_birth"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
-	Address   string `json:"address"`
-	Avatar    string `json:"avatar"`
-	Class     *Class `json:"class"`
+	ID        string  `json:"id"`
+	UserName  string  `json:"user_name"`
+	Role      string  `json:"role"`
+	Status    int     `json:"status"`
+	Name      string  `json:"name"`
+	DateBirth string  `json:"date_birth"`
+	Phone     string  `json:"phone"`
+	Email     string  `json:"email"`
+	Address   string  `json:"address"`
+	Avatar    string  `json:"avatar"`
+	Class     *Class  `json:"class"`
+	Tuition   Tuition `json:"tuition"`
 }
 
 func (User) IsEntity() {}

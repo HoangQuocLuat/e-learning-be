@@ -5,6 +5,7 @@ import (
 	"e-learning/config"
 	"e-learning/src/cronjob"
 	"e-learning/src/database"
+	face_config "e-learning/src/face-config"
 	kafka_config "e-learning/src/kafka"
 	"e-learning/src/server"
 	"log"
@@ -21,6 +22,8 @@ var (
 	configPrefix string
 	configSource string
 )
+
+const dataDir = "/home/ad/Documents/e-learning/e-learning-be/train"
 
 func main() {
 	app := cli.NewApp()
@@ -100,6 +103,7 @@ func Serve(c *cli.Context) error {
 		panic(err)
 	}
 	kafka_config.InitKafkaProducer()
+	face_config.InitRecognizer(dataDir)
 	go func() { cronjob.NotifyWithTimeBySchedules() }()
 
 	return server.ServeGraph(c.Context, c.String("addr-graph"))

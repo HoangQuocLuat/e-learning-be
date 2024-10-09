@@ -1,0 +1,7 @@
+type Tuition @key(fields: "id") {
+    id: String!
+    user_id: String!
+    price: Float!
+    status: String!
+    lessons_count: Int!
+}

@@ -7,7 +7,6 @@ package resolver_admin
 import (
 	"context"
 	model_user "e-learning/src/database/model/user"
-	generated_admin "e-learning/src/graph/generated/admin"
 	graph_model "e-learning/src/graph/generated/model"
 	service_auth "e-learning/src/service/auth"
 	"fmt"
@@ -34,8 +33,3 @@ func (r *queryResolver) AuthAdminLogin(ctx context.Context, userName string, pas
 		RefreshToken: refreshToken,
 	}, nil
 }
-
-// Query returns generated_admin.QueryResolver implementation.
-func (r *Resolver) Query() generated_admin.QueryResolver { return &queryResolver{r} }
-
-type queryResolver struct{ *Resolver }

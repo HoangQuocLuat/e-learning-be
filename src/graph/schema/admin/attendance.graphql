@@ -1,0 +1,3 @@
+extend type Query {
+    attendance(user_id: String!): [Attendance!]!
+}

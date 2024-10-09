@@ -45,5 +45,13 @@ func ConnectDatabse(ctx context.Context) error {
 		return err
 	}
 
+	if err := collection.LoadAttendanceCollectionMongo(mongoClient); err != nil {
+		return err
+	}
+
+	if err := collection.LoadTuitionCollectionMongo(mongoClient); err != nil {
+		return err
+	}
+
 	return nil
 }
