@@ -21,6 +21,16 @@ func (r *entityResolver) FindClassByID(ctx context.Context, id string) (*graph_m
 	panic(fmt.Errorf("not implemented: FindClassByID - findClassByID"))
 }
 
+// FindMonthlyCheckinsByID is the resolver for the findMonthlyCheckinsByID field.
+func (r *entityResolver) FindMonthlyCheckinsByID(ctx context.Context, id string) (*graph_model.MonthlyCheckins, error) {
+	panic(fmt.Errorf("not implemented: FindMonthlyCheckinsByID - findMonthlyCheckinsByID"))
+}
+
+// FindPaymentByID is the resolver for the findPaymentByID field.
+func (r *entityResolver) FindPaymentByID(ctx context.Context, id string) (*graph_model.Payment, error) {
+	panic(fmt.Errorf("not implemented: FindPaymentByID - findPaymentByID"))
+}
+
 // FindSchedulesByID is the resolver for the findSchedulesByID field.
 func (r *entityResolver) FindSchedulesByID(ctx context.Context, id string) (*graph_model.Schedules, error) {
 	panic(fmt.Errorf("not implemented: FindSchedulesByID - findSchedulesByID"))

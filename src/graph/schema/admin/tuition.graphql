@@ -2,6 +2,6 @@ extend type Query {
     tuition(user_id: String!): [Tuition!]!
 }
 
-extend type Mutation {
-    tuitionAdd(data: TuitionAdd): Tuition!
-}
+# extend type Mutation {
+#     # tuitionAdd(data: TuitionAdd): Tuition!
+# }

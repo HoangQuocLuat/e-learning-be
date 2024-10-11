@@ -1,6 +1,7 @@
 type Attendance @key(fields: "id") {
     id: String!
     time_check_in: Time
+    status_check_in: String!
     time_check_out: Time
     user: User! @provides(fields: "id")
 }

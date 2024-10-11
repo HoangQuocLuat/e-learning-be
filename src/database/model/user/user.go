@@ -31,6 +31,7 @@ type User struct {
 	Role             string      `json:"role" bson:"role"`
 	Avatar           string      `json:"avatar" bson:"avatar"`
 	Status           int         `json:"status" bson:"status"`
+	LessonsCount     int         `json:"lessons_count" bson:"lessons_count"`
 	DescriptorAvatar []float32   `json:"descriptor_avatar" bson:"descriptor_avatar"`
 	CreatedAt        time.Time   `json:"created_at" bson:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at" bson:"updated_at"`

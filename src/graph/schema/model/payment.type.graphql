@@ -1,0 +1,7 @@
+type Payment @key(fields: "id") {
+    id: String!
+    price: Int!
+    status: String!
+    user: User! @provides(fields: "id")
+    tuition: Tuition @provides(fields: "id")
+}

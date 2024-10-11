@@ -4,7 +4,6 @@ import (
 	"context"
 	"e-learning/src/database/collection"
 	model_attendance "e-learning/src/database/model/attendance"
-	model_tuition "e-learning/src/database/model/tuition"
 	face_config "e-learning/src/face-config"
 	service_user "e-learning/src/service/user"
 	"fmt"
@@ -57,7 +56,7 @@ func CheckFace(w http.ResponseWriter, r *http.Request) {
 	face_config.Recognizer.SetSamples(samples, labels)
 
 	// Nhận diện khuôn mặt từ tệp
-	tonyImage := filepath.Join("/home/ad/Documents/e-learning/e-learning-be/src/service/service.rest/imggg/hl.jpg")
+	tonyImage := filepath.Join("/home/ad/Documents/e-learning/e-learning-be/src/service/service.rest/imggg/qqqq.jpg")
 	tonyFace, err := face_config.Recognizer.RecognizeSingleFile(tonyImage)
 	if err != nil {
 		log.Fatalf("Can't recognize tonyFace: %v", err)
@@ -94,11 +93,12 @@ func CheckFace(w http.ResponseWriter, r *http.Request) {
 
 	// Điểm danh mới
 	res = &model_attendance.Attendance{
-		ID:          primitive.NewObjectID().Hex(),
-		UserID:      faceDesc[faceID].ID,
-		TimeCheckIn: time.Now(),
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:            primitive.NewObjectID().Hex(),
+		UserID:        faceDesc[faceID].ID,
+		TimeCheckIn:   time.Now(),
+		StatusCheckIn: "1",
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 	_, err = collection.Attendance().Collection().InsertOne(ctx, res)
 	if err != nil {
@@ -112,45 +112,10 @@ func CheckFace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Cập nhật thông tin học phí
-	var tuition model_tuition.Tuition
-	err = collection.Tuition().Collection().FindOne(ctx, bson.M{"user_id": faceDesc[faceID].ID}).Decode(&tuition)
-	if err == mongo.ErrNoDocuments {
-		tuition = model_tuition.Tuition{
-			ID:           primitive.NewObjectID().Hex(),
-			UserID:       faceDesc[faceID].ID,
-			LessonsCount: 1,
-			Price:        30,
-			CreatedAt:    time.Now(),
-			UpdatedAt:    time.Now(),
-		}
-		// Chèn học phí mới vào DB
-		_, err = collection.Tuition().Collection().InsertOne(ctx, tuition)
-		if err != nil {
-			log.Println("Error inserting tuition:", err)
-			http.Error(w, "Failed to insert tuition", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		newTuition := tuition.LessonsCount + 1
-		newPrice := tuition.Price + 30
-		updateTuition := bson.M{
-			"$set": bson.M{
-				"lessons_count": newTuition,
-				"price":         newPrice,
-			},
-		}
-		_, err = collection.Tuition().Collection().UpdateOne(ctx, bson.M{"user_id": faceDesc[faceID].ID}, updateTuition)
-		if err != nil {
-			log.Println("Error updating tuition:", err)
-			http.Error(w, "Failed to update tuition", http.StatusInternalServerError)
-			return
-		}
-	}
-
 	// Check-out
 	time.Sleep(2 * time.Second)
-	tonyFace1, err := face_config.Recognizer.RecognizeSingleFile(tonyImage)
+	tonyImage1 := filepath.Join("/home/ad/Documents/e-learning/e-learning-be/src/service/service.rest/imggg/qqqq.jpg")
+	tonyFace1, err := face_config.Recognizer.RecognizeSingleFile(tonyImage1)
 	if err != nil {
 		log.Fatalf("Can't recognize tonyFace: %v", err)
 	}
@@ -164,33 +129,39 @@ func CheckFace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filter2 := bson.M{
-		"user_id":       faceDesc[faceID].ID,
-		"time_checkout": bson.M{"$exists": false},
+		"user_id": faceDesc[faceID1].ID,
+		"time_check_in": bson.M{
+			"$gte": today,
+			"$lt":  today.Add(24 * time.Hour),
+		},
+		"status_check_in": "1",
 	}
 
 	var existingAttendance model_attendance.Attendance
 	err = collection.Attendance().Collection().FindOne(ctx, filter2).Decode(&existingAttendance)
-	if err != mongo.ErrNoDocuments {
-		update := bson.M{
-			"$set": bson.M{
-				"time_check_out": time.Now(),
-				"updated_at":     time.Now(),
-			},
-		}
-		_, err = collection.Attendance().Collection().UpdateOne(ctx, filter2, update)
-		if err != nil {
-			log.Println("Error updating attendance:", err)
-			http.Error(w, "Failed to update attendance", http.StatusInternalServerError)
-			return
-		}
-		message = fmt.Sprintf("%s Check-out success\n", faceDesc[faceID].Name)
-		if err := conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
-			log.Println("Write:", err)
-			return
-		}
+	fmt.Println(existingAttendance)
+	if err != nil {
+		log.Println("Error decoding user:", err)
+		return
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"time_check_out": time.Now(),
+			"updated_at":     time.Now(),
+		},
+	}
+	_, err = collection.Attendance().Collection().UpdateOne(ctx, filter2, update)
+	if err != nil {
+		log.Println("Error updating attendance:", err)
+		http.Error(w, "Failed to update attendance", http.StatusInternalServerError)
+		return
+	}
+	message = fmt.Sprintf("%s Check-out success\n", faceDesc[faceID1].Name)
+	if err := conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
+		log.Println("Write:", err)
+		return
 	}
 
-	// Đọc tin nhắn từ WebSocket
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
@@ -198,6 +169,5 @@ func CheckFace(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		log.Printf("Received: %s", message)
-		// Xử lý thêm các tin nhắn nếu cần
 	}
 }

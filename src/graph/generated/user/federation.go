@@ -120,6 +120,46 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 				list[idx[i]] = entity
 				return nil
 			}
+		case "MonthlyCheckins":
+			resolverName, err := entityResolverNameForMonthlyCheckins(ctx, rep)
+			if err != nil {
+				return fmt.Errorf(`finding resolver for Entity "MonthlyCheckins": %w`, err)
+			}
+			switch resolverName {
+
+			case "findMonthlyCheckinsByID":
+				id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+				if err != nil {
+					return fmt.Errorf(`unmarshalling param 0 for findMonthlyCheckinsByID(): %w`, err)
+				}
+				entity, err := ec.resolvers.Entity().FindMonthlyCheckinsByID(ctx, id0)
+				if err != nil {
+					return fmt.Errorf(`resolving Entity "MonthlyCheckins": %w`, err)
+				}
+
+				list[idx[i]] = entity
+				return nil
+			}
+		case "Payment":
+			resolverName, err := entityResolverNameForPayment(ctx, rep)
+			if err != nil {
+				return fmt.Errorf(`finding resolver for Entity "Payment": %w`, err)
+			}
+			switch resolverName {
+
+			case "findPaymentByID":
+				id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+				if err != nil {
+					return fmt.Errorf(`unmarshalling param 0 for findPaymentByID(): %w`, err)
+				}
+				entity, err := ec.resolvers.Entity().FindPaymentByID(ctx, id0)
+				if err != nil {
+					return fmt.Errorf(`resolving Entity "Payment": %w`, err)
+				}
+
+				list[idx[i]] = entity
+				return nil
+			}
 		case "Schedules":
 			resolverName, err := entityResolverNameForSchedules(ctx, rep)
 			if err != nil {
@@ -281,6 +321,40 @@ func entityResolverNameForClass(ctx context.Context, rep map[string]interface{})
 		return "findClassByID", nil
 	}
 	return "", fmt.Errorf("%w for Class", ErrTypeNotFound)
+}
+
+func entityResolverNameForMonthlyCheckins(ctx context.Context, rep map[string]interface{}) (string, error) {
+	for {
+		var (
+			m   map[string]interface{}
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		m = rep
+		if _, ok = m["id"]; !ok {
+			break
+		}
+		return "findMonthlyCheckinsByID", nil
+	}
+	return "", fmt.Errorf("%w for MonthlyCheckins", ErrTypeNotFound)
+}
+
+func entityResolverNameForPayment(ctx context.Context, rep map[string]interface{}) (string, error) {
+	for {
+		var (
+			m   map[string]interface{}
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		m = rep
+		if _, ok = m["id"]; !ok {
+			break
+		}
+		return "findPaymentByID", nil
+	}
+	return "", fmt.Errorf("%w for Payment", ErrTypeNotFound)
 }
 
 func entityResolverNameForSchedules(ctx context.Context, rep map[string]interface{}) (string, error) {

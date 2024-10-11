@@ -7,10 +7,11 @@ import (
 )
 
 type Attendance struct {
-	ID           string     `json:"id"`
-	TimeCheckIn  *time.Time `json:"time_check_in,omitempty"`
-	TimeCheckOut *time.Time `json:"time_check_out,omitempty"`
-	User         User       `json:"user"`
+	ID            string     `json:"id"`
+	TimeCheckIn   *time.Time `json:"time_check_in,omitempty"`
+	StatusCheckIn string     `json:"status_check_in"`
+	TimeCheckOut  *time.Time `json:"time_check_out,omitempty"`
+	User          *User      `json:"user"`
 }
 
 func (Attendance) IsEntity() {}
@@ -46,6 +47,15 @@ type ClassUpdate struct {
 	Name *string `json:"name,omitempty"`
 }
 
+type MonthlyCheckins struct {
+	ID            string `json:"id"`
+	Month         string `json:"month"`
+	TotalCheckins int    `json:"totalCheckins"`
+	User          User   `json:"user"`
+}
+
+func (MonthlyCheckins) IsEntity() {}
+
 type Mutation struct {
 }
 
@@ -55,6 +65,16 @@ type Pagination struct {
 	TotalPages  int `json:"total_pages"`
 	Total       int `json:"total"`
 }
+
+type Payment struct {
+	ID      string   `json:"id"`
+	Price   int      `json:"price"`
+	Status  string   `json:"status"`
+	User    User     `json:"user"`
+	Tuition *Tuition `json:"tuition,omitempty"`
+}
+
+func (Payment) IsEntity() {}
 
 type Query struct {
 }
@@ -101,32 +121,32 @@ type SchedulesUpdate struct {
 }
 
 type Tuition struct {
-	ID           string  `json:"id"`
-	UserID       string  `json:"user_id"`
-	Price        float64 `json:"price"`
-	Status       string  `json:"status"`
-	LessonsCount int     `json:"lessons_count"`
+	ID           string `json:"id"`
+	TotalFee     int    `json:"total_fee"`
+	Discount     int    `json:"discount"`
+	PaidAmount   int    `json:"paid_amount"`
+	RemainingFee int    `json:"remaining_fee"`
+	User         *User  `json:"user"`
 }
 
 func (Tuition) IsEntity() {}
 
-type TuitionAdd struct {
-	UserID string `json:"user_id"`
-}
-
 type User struct {
-	ID        string  `json:"id"`
-	UserName  string  `json:"user_name"`
-	Role      string  `json:"role"`
-	Status    int     `json:"status"`
-	Name      string  `json:"name"`
-	DateBirth string  `json:"date_birth"`
-	Phone     string  `json:"phone"`
-	Email     string  `json:"email"`
-	Address   string  `json:"address"`
-	Avatar    string  `json:"avatar"`
-	Class     *Class  `json:"class"`
-	Tuition   Tuition `json:"tuition"`
+	ID           string      `json:"id"`
+	UserName     string      `json:"user_name"`
+	Role         string      `json:"role"`
+	Status       int         `json:"status"`
+	Name         string      `json:"name"`
+	DateBirth    string      `json:"date_birth"`
+	Phone        string      `json:"phone"`
+	Email        string      `json:"email"`
+	Address      string      `json:"address"`
+	Avatar       string      `json:"avatar"`
+	Type         string      `json:"type"`
+	Class        *Class      `json:"class"`
+	Tuition      *Tuition    `json:"tuition"`
+	Attendance   *Attendance `json:"attendance"`
+	LessonsCount int         `json:"lessons_count"`
 }
 
 func (User) IsEntity() {}

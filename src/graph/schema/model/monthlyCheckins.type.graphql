@@ -1,0 +1,6 @@
+type MonthlyCheckins @key(fields: "id") {
+    id: String!
+    month: String!
+    totalCheckins: Int!
+    user: User! @provides(fields: "id")
+}

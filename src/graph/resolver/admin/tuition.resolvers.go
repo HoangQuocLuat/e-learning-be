@@ -10,11 +10,6 @@ import (
 	"fmt"
 )
 
-// TuitionAdd is the resolver for the tuitionAdd field.
-func (r *mutationResolver) TuitionAdd(ctx context.Context, data *graph_model.TuitionAdd) (*graph_model.Tuition, error) {
-	panic(fmt.Errorf("not implemented: TuitionAdd - tuitionAdd"))
-}
-
 // Tuition is the resolver for the tuition field.
 func (r *queryResolver) Tuition(ctx context.Context, userID string) ([]graph_model.Tuition, error) {
 	panic(fmt.Errorf("not implemented: Tuition - tuition"))

@@ -7,20 +7,22 @@ import (
 )
 
 type Attendance struct {
-	ID           string    `json:"id" bson:"_id"`
-	UserID       string    `json:"user_id" bson:"user_id"`
-	TimeCheckIn  time.Time `json:"time_check_in" bson:"time_check_in"`
-	TimeCheckOut time.Time `json:"time_check_out" bson:"time_check_out"`
-	CreatedAt    time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at" bson:"updated_at"`
+	ID            string    `json:"id" bson:"_id"`
+	UserID        string    `json:"user_id" bson:"user_id"`
+	TimeCheckIn   time.Time `json:"time_check_in" bson:"time_check_in"`
+	StatusCheckIn string    `json:"status_check_in" bson:"status_check_in"`
+	TimeCheckOut  time.Time `json:"time_check_out" bson:"time_check_out"`
+	CreatedAt     time.Time `json:"created_at" bson:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at" bson:"updated_at"`
 }
 
 func (a *Attendance) ConvertToModelGraph() *graphModel.Attendance {
 	data := graphModel.Attendance{
-		ID:           a.ID,
-		TimeCheckIn:  &a.TimeCheckIn,
-		TimeCheckOut: &a.TimeCheckOut,
-		User: graphModel.User{
+		ID: a.ID,
+		// TimeCheckIn:   &a.TimeCheckIn,
+		StatusCheckIn: a.StatusCheckIn,
+		TimeCheckOut:  &a.TimeCheckOut,
+		User: &graphModel.User{
 			ID: a.UserID,
 		},
 	}

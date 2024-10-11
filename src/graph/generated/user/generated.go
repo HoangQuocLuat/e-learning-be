@@ -49,10 +49,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Attendance struct {
-		ID           func(childComplexity int) int
-		TimeCheckIn  func(childComplexity int) int
-		TimeCheckOut func(childComplexity int) int
-		User         func(childComplexity int) int
+		ID            func(childComplexity int) int
+		StatusCheckIn func(childComplexity int) int
+		TimeCheckIn   func(childComplexity int) int
+		TimeCheckOut  func(childComplexity int) int
+		User          func(childComplexity int) int
 	}
 
 	AuthLoginResponse struct {
@@ -68,11 +69,20 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
-		FindAttendanceByID func(childComplexity int, id string) int
-		FindClassByID      func(childComplexity int, id string) int
-		FindSchedulesByID  func(childComplexity int, id string) int
-		FindTuitionByID    func(childComplexity int, id string) int
-		FindUserByID       func(childComplexity int, id string) int
+		FindAttendanceByID      func(childComplexity int, id string) int
+		FindClassByID           func(childComplexity int, id string) int
+		FindMonthlyCheckinsByID func(childComplexity int, id string) int
+		FindPaymentByID         func(childComplexity int, id string) int
+		FindSchedulesByID       func(childComplexity int, id string) int
+		FindTuitionByID         func(childComplexity int, id string) int
+		FindUserByID            func(childComplexity int, id string) int
+	}
+
+	MonthlyCheckins struct {
+		ID            func(childComplexity int) int
+		Month         func(childComplexity int) int
+		TotalCheckins func(childComplexity int) int
+		User          func(childComplexity int) int
 	}
 
 	Pagination struct {
@@ -80,6 +90,14 @@ type ComplexityRoot struct {
 		Limit       func(childComplexity int) int
 		Total       func(childComplexity int) int
 		TotalPages  func(childComplexity int) int
+	}
+
+	Payment struct {
+		ID      func(childComplexity int) int
+		Price   func(childComplexity int) int
+		Status  func(childComplexity int) int
+		Tuition func(childComplexity int) int
+		User    func(childComplexity int) int
 	}
 
 	Query struct {
@@ -103,26 +121,30 @@ type ComplexityRoot struct {
 	}
 
 	Tuition struct {
+		Discount     func(childComplexity int) int
 		ID           func(childComplexity int) int
-		LessonsCount func(childComplexity int) int
-		Price        func(childComplexity int) int
-		Status       func(childComplexity int) int
-		UserID       func(childComplexity int) int
+		PaidAmount   func(childComplexity int) int
+		RemainingFee func(childComplexity int) int
+		TotalFee     func(childComplexity int) int
+		User         func(childComplexity int) int
 	}
 
 	User struct {
-		Address   func(childComplexity int) int
-		Avatar    func(childComplexity int) int
-		Class     func(childComplexity int) int
-		DateBirth func(childComplexity int) int
-		Email     func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Phone     func(childComplexity int) int
-		Role      func(childComplexity int) int
-		Status    func(childComplexity int) int
-		Tuition   func(childComplexity int) int
-		UserName  func(childComplexity int) int
+		Address      func(childComplexity int) int
+		Attendance   func(childComplexity int) int
+		Avatar       func(childComplexity int) int
+		Class        func(childComplexity int) int
+		DateBirth    func(childComplexity int) int
+		Email        func(childComplexity int) int
+		ID           func(childComplexity int) int
+		LessonsCount func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Phone        func(childComplexity int) int
+		Role         func(childComplexity int) int
+		Status       func(childComplexity int) int
+		Tuition      func(childComplexity int) int
+		Type         func(childComplexity int) int
+		UserName     func(childComplexity int) int
 	}
 
 	UserPagination struct {
@@ -138,6 +160,8 @@ type ComplexityRoot struct {
 type EntityResolver interface {
 	FindAttendanceByID(ctx context.Context, id string) (*graph_model.Attendance, error)
 	FindClassByID(ctx context.Context, id string) (*graph_model.Class, error)
+	FindMonthlyCheckinsByID(ctx context.Context, id string) (*graph_model.MonthlyCheckins, error)
+	FindPaymentByID(ctx context.Context, id string) (*graph_model.Payment, error)
 	FindSchedulesByID(ctx context.Context, id string) (*graph_model.Schedules, error)
 	FindTuitionByID(ctx context.Context, id string) (*graph_model.Tuition, error)
 	FindUserByID(ctx context.Context, id string) (*graph_model.User, error)
@@ -173,6 +197,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Attendance.ID(childComplexity), true
+
+	case "Attendance.status_check_in":
+		if e.complexity.Attendance.StatusCheckIn == nil {
+			break
+		}
+
+		return e.complexity.Attendance.StatusCheckIn(childComplexity), true
 
 	case "Attendance.time_check_in":
 		if e.complexity.Attendance.TimeCheckIn == nil {
@@ -261,6 +292,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindClassByID(childComplexity, args["id"].(string)), true
 
+	case "Entity.findMonthlyCheckinsByID":
+		if e.complexity.Entity.FindMonthlyCheckinsByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findMonthlyCheckinsByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindMonthlyCheckinsByID(childComplexity, args["id"].(string)), true
+
+	case "Entity.findPaymentByID":
+		if e.complexity.Entity.FindPaymentByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findPaymentByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindPaymentByID(childComplexity, args["id"].(string)), true
+
 	case "Entity.findSchedulesByID":
 		if e.complexity.Entity.FindSchedulesByID == nil {
 			break
@@ -297,6 +352,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindUserByID(childComplexity, args["id"].(string)), true
 
+	case "MonthlyCheckins.id":
+		if e.complexity.MonthlyCheckins.ID == nil {
+			break
+		}
+
+		return e.complexity.MonthlyCheckins.ID(childComplexity), true
+
+	case "MonthlyCheckins.month":
+		if e.complexity.MonthlyCheckins.Month == nil {
+			break
+		}
+
+		return e.complexity.MonthlyCheckins.Month(childComplexity), true
+
+	case "MonthlyCheckins.totalCheckins":
+		if e.complexity.MonthlyCheckins.TotalCheckins == nil {
+			break
+		}
+
+		return e.complexity.MonthlyCheckins.TotalCheckins(childComplexity), true
+
+	case "MonthlyCheckins.user":
+		if e.complexity.MonthlyCheckins.User == nil {
+			break
+		}
+
+		return e.complexity.MonthlyCheckins.User(childComplexity), true
+
 	case "Pagination.current_page":
 		if e.complexity.Pagination.CurrentPage == nil {
 			break
@@ -324,6 +407,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Pagination.TotalPages(childComplexity), true
+
+	case "Payment.id":
+		if e.complexity.Payment.ID == nil {
+			break
+		}
+
+		return e.complexity.Payment.ID(childComplexity), true
+
+	case "Payment.price":
+		if e.complexity.Payment.Price == nil {
+			break
+		}
+
+		return e.complexity.Payment.Price(childComplexity), true
+
+	case "Payment.status":
+		if e.complexity.Payment.Status == nil {
+			break
+		}
+
+		return e.complexity.Payment.Status(childComplexity), true
+
+	case "Payment.tuition":
+		if e.complexity.Payment.Tuition == nil {
+			break
+		}
+
+		return e.complexity.Payment.Tuition(childComplexity), true
+
+	case "Payment.user":
+		if e.complexity.Payment.User == nil {
+			break
+		}
+
+		return e.complexity.Payment.User(childComplexity), true
 
 	case "Query.authLogin":
 		if e.complexity.Query.AuthLogin == nil {
@@ -438,6 +556,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Schedules.StartTime(childComplexity), true
 
+	case "Tuition.discount":
+		if e.complexity.Tuition.Discount == nil {
+			break
+		}
+
+		return e.complexity.Tuition.Discount(childComplexity), true
+
 	case "Tuition.id":
 		if e.complexity.Tuition.ID == nil {
 			break
@@ -445,33 +570,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tuition.ID(childComplexity), true
 
-	case "Tuition.lessons_count":
-		if e.complexity.Tuition.LessonsCount == nil {
+	case "Tuition.paid_amount":
+		if e.complexity.Tuition.PaidAmount == nil {
 			break
 		}
 
-		return e.complexity.Tuition.LessonsCount(childComplexity), true
+		return e.complexity.Tuition.PaidAmount(childComplexity), true
 
-	case "Tuition.price":
-		if e.complexity.Tuition.Price == nil {
+	case "Tuition.remaining_fee":
+		if e.complexity.Tuition.RemainingFee == nil {
 			break
 		}
 
-		return e.complexity.Tuition.Price(childComplexity), true
+		return e.complexity.Tuition.RemainingFee(childComplexity), true
 
-	case "Tuition.status":
-		if e.complexity.Tuition.Status == nil {
+	case "Tuition.total_fee":
+		if e.complexity.Tuition.TotalFee == nil {
 			break
 		}
 
-		return e.complexity.Tuition.Status(childComplexity), true
+		return e.complexity.Tuition.TotalFee(childComplexity), true
 
-	case "Tuition.user_id":
-		if e.complexity.Tuition.UserID == nil {
+	case "Tuition.user":
+		if e.complexity.Tuition.User == nil {
 			break
 		}
 
-		return e.complexity.Tuition.UserID(childComplexity), true
+		return e.complexity.Tuition.User(childComplexity), true
 
 	case "User.address":
 		if e.complexity.User.Address == nil {
@@ -479,6 +604,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Address(childComplexity), true
+
+	case "User.attendance":
+		if e.complexity.User.Attendance == nil {
+			break
+		}
+
+		return e.complexity.User.Attendance(childComplexity), true
 
 	case "User.avatar":
 		if e.complexity.User.Avatar == nil {
@@ -515,6 +647,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ID(childComplexity), true
 
+	case "User.lessons_count":
+		if e.complexity.User.LessonsCount == nil {
+			break
+		}
+
+		return e.complexity.User.LessonsCount(childComplexity), true
+
 	case "User.name":
 		if e.complexity.User.Name == nil {
 			break
@@ -549,6 +688,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Tuition(childComplexity), true
+
+	case "User.type":
+		if e.complexity.User.Type == nil {
+			break
+		}
+
+		return e.complexity.User.Type(childComplexity), true
 
 	case "User.user_name":
 		if e.complexity.User.UserName == nil {
@@ -593,7 +739,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSchedulesAdd,
 		ec.unmarshalInputSchedulesDelete,
 		ec.unmarshalInputSchedulesUpdate,
-		ec.unmarshalInputTuitionAdd,
 		ec.unmarshalInputUserAdd,
 		ec.unmarshalInputUserChangePassword,
 		ec.unmarshalInputUserDelete,
@@ -726,9 +871,10 @@ input SchedulesDelete {
     id: String!
 }
 `, BuiltIn: false},
-	{Name: "../../schema/model/tuition.input.graphql", Input: `input TuitionAdd {
-    user_id: String!
-}
+	{Name: "../../schema/model/tuition.input.graphql", Input: `# input TuitionAdd {
+#     user_id: String!
+#     user: User! @provides(fields: "id")
+# }
 `, BuiltIn: false},
 	{Name: "../../schema/model/user.input.graphql", Input: `input UserAdd {
     class_id: String!
@@ -775,6 +921,7 @@ input UserDelete {
 	{Name: "../../schema/model/attendance.type.graphql", Input: `type Attendance @key(fields: "id") {
     id: String!
     time_check_in: Time
+    status_check_in: String!
     time_check_out: Time
     user: User! @provides(fields: "id")
 }
@@ -800,6 +947,21 @@ type Pagination {
     total_pages: Int!
     total: Int!
 }`, BuiltIn: false},
+	{Name: "../../schema/model/monthlyCheckins.type.graphql", Input: `type MonthlyCheckins @key(fields: "id") {
+    id: String!
+    month: String!
+    totalCheckins: Int!
+    user: User! @provides(fields: "id")
+}
+`, BuiltIn: false},
+	{Name: "../../schema/model/payment.type.graphql", Input: `type Payment @key(fields: "id") {
+    id: String!
+    price: Int!
+    status: String!
+    user: User! @provides(fields: "id")
+    tuition: Tuition @provides(fields: "id")
+}
+`, BuiltIn: false},
 	{Name: "../../schema/model/schedules.type.graphql", Input: `type Schedules @key(fields: "id") {
     id: String!
     day_of_week: Int!
@@ -813,11 +975,13 @@ type Pagination {
 }`, BuiltIn: false},
 	{Name: "../../schema/model/tuition.type.graphql", Input: `type Tuition @key(fields: "id") {
     id: String!
-    user_id: String!
-    price: Float!
-    status: String!
-    lessons_count: Int!
-}`, BuiltIn: false},
+    total_fee: Int! # hocphitong
+    discount: Int! #hocphi giam gia
+    paid_amount: Int! #hocphi da tra
+    remaining_fee: Int! #hocpphi con lai
+    user: User! @provides(fields: "id")
+}
+`, BuiltIn: false},
 	{Name: "../../schema/model/user.type.graphql", Input: `type User @key(fields: "id") {
     id: String!
     user_name: String!
@@ -829,8 +993,11 @@ type Pagination {
     email: String!
     address: String!
     avatar: String!
+    type: String!
     class: Class! @provides(fields: "id")
     tuition: Tuition! @provides(fields: "id")
+    attendance: Attendance! @provides(fields: "id")
+    lessons_count: Int!
 }
 
 type UserPagination {
@@ -858,12 +1025,14 @@ type UserPagination {
 `, BuiltIn: true},
 	{Name: "../../federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = Attendance | Class | Schedules | Tuition | User
+union _Entity = Attendance | Class | MonthlyCheckins | Payment | Schedules | Tuition | User
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
 		findAttendanceByID(id: String!,): Attendance!
 	findClassByID(id: String!,): Class!
+	findMonthlyCheckinsByID(id: String!,): MonthlyCheckins!
+	findPaymentByID(id: String!,): Payment!
 	findSchedulesByID(id: String!,): Schedules!
 	findTuitionByID(id: String!,): Tuition!
 	findUserByID(id: String!,): User!
@@ -902,6 +1071,36 @@ func (ec *executionContext) field_Entity_findAttendanceByID_args(ctx context.Con
 }
 
 func (ec *executionContext) field_Entity_findClassByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Entity_findMonthlyCheckinsByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Entity_findPaymentByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1153,6 +1352,50 @@ func (ec *executionContext) fieldContext_Attendance_time_check_in(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _Attendance_status_check_in(ctx context.Context, field graphql.CollectedField, obj *graph_model.Attendance) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Attendance_status_check_in(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StatusCheckIn, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Attendance_status_check_in(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Attendance",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Attendance_time_check_out(ctx context.Context, field graphql.CollectedField, obj *graph_model.Attendance) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Attendance_time_check_out(ctx, field)
 	if err != nil {
@@ -1220,9 +1463,9 @@ func (ec *executionContext) _Attendance_user(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(graph_model.User)
+	res := resTmp.(*graph_model.User)
 	fc.Result = res
-	return ec.marshalNUser2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Attendance_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1253,10 +1496,16 @@ func (ec *executionContext) fieldContext_Attendance_user(ctx context.Context, fi
 				return ec.fieldContext_User_address(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
 			case "class":
 				return ec.fieldContext_User_class(ctx, field)
 			case "tuition":
 				return ec.fieldContext_User_tuition(ctx, field)
+			case "attendance":
+				return ec.fieldContext_User_attendance(ctx, field)
+			case "lessons_count":
+				return ec.fieldContext_User_lessons_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1499,10 +1748,16 @@ func (ec *executionContext) fieldContext_Class_user(ctx context.Context, field g
 				return ec.fieldContext_User_address(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
 			case "class":
 				return ec.fieldContext_User_class(ctx, field)
 			case "tuition":
 				return ec.fieldContext_User_tuition(ctx, field)
+			case "attendance":
+				return ec.fieldContext_User_attendance(ctx, field)
+			case "lessons_count":
+				return ec.fieldContext_User_lessons_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1617,6 +1872,8 @@ func (ec *executionContext) fieldContext_Entity_findAttendanceByID(ctx context.C
 				return ec.fieldContext_Attendance_id(ctx, field)
 			case "time_check_in":
 				return ec.fieldContext_Attendance_time_check_in(ctx, field)
+			case "status_check_in":
+				return ec.fieldContext_Attendance_status_check_in(ctx, field)
 			case "time_check_out":
 				return ec.fieldContext_Attendance_time_check_out(ctx, field)
 			case "user":
@@ -1698,6 +1955,138 @@ func (ec *executionContext) fieldContext_Entity_findClassByID(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Entity_findClassByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Entity_findMonthlyCheckinsByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Entity_findMonthlyCheckinsByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindMonthlyCheckinsByID(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.MonthlyCheckins)
+	fc.Result = res
+	return ec.marshalNMonthlyCheckins2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐMonthlyCheckins(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Entity_findMonthlyCheckinsByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_MonthlyCheckins_id(ctx, field)
+			case "month":
+				return ec.fieldContext_MonthlyCheckins_month(ctx, field)
+			case "totalCheckins":
+				return ec.fieldContext_MonthlyCheckins_totalCheckins(ctx, field)
+			case "user":
+				return ec.fieldContext_MonthlyCheckins_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MonthlyCheckins", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findMonthlyCheckinsByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Entity_findPaymentByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Entity_findPaymentByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindPaymentByID(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.Payment)
+	fc.Result = res
+	return ec.marshalNPayment2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPayment(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Entity_findPaymentByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Payment_id(ctx, field)
+			case "price":
+				return ec.fieldContext_Payment_price(ctx, field)
+			case "status":
+				return ec.fieldContext_Payment_status(ctx, field)
+			case "user":
+				return ec.fieldContext_Payment_user(ctx, field)
+			case "tuition":
+				return ec.fieldContext_Payment_tuition(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Payment", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findPaymentByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1820,14 +2209,16 @@ func (ec *executionContext) fieldContext_Entity_findTuitionByID(ctx context.Cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Tuition_id(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Tuition_user_id(ctx, field)
-			case "price":
-				return ec.fieldContext_Tuition_price(ctx, field)
-			case "status":
-				return ec.fieldContext_Tuition_status(ctx, field)
-			case "lessons_count":
-				return ec.fieldContext_Tuition_lessons_count(ctx, field)
+			case "total_fee":
+				return ec.fieldContext_Tuition_total_fee(ctx, field)
+			case "discount":
+				return ec.fieldContext_Tuition_discount(ctx, field)
+			case "paid_amount":
+				return ec.fieldContext_Tuition_paid_amount(ctx, field)
+			case "remaining_fee":
+				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
+			case "user":
+				return ec.fieldContext_Tuition_user(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
 		},
@@ -1905,10 +2296,16 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 				return ec.fieldContext_User_address(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
 			case "class":
 				return ec.fieldContext_User_class(ctx, field)
 			case "tuition":
 				return ec.fieldContext_User_tuition(ctx, field)
+			case "attendance":
+				return ec.fieldContext_User_attendance(ctx, field)
+			case "lessons_count":
+				return ec.fieldContext_User_lessons_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1923,6 +2320,214 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 	if fc.Args, err = ec.field_Entity_findUserByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyCheckins_id(ctx context.Context, field graphql.CollectedField, obj *graph_model.MonthlyCheckins) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCheckins_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyCheckins_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyCheckins",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyCheckins_month(ctx context.Context, field graphql.CollectedField, obj *graph_model.MonthlyCheckins) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCheckins_month(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Month, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyCheckins_month(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyCheckins",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyCheckins_totalCheckins(ctx context.Context, field graphql.CollectedField, obj *graph_model.MonthlyCheckins) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCheckins_totalCheckins(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCheckins, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyCheckins_totalCheckins(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyCheckins",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyCheckins_user(ctx context.Context, field graphql.CollectedField, obj *graph_model.MonthlyCheckins) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCheckins_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(graph_model.User)
+	fc.Result = res
+	return ec.marshalNUser2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyCheckins_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyCheckins",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "user_name":
+				return ec.fieldContext_User_user_name(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "status":
+				return ec.fieldContext_User_status(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "date_birth":
+				return ec.fieldContext_User_date_birth(ctx, field)
+			case "phone":
+				return ec.fieldContext_User_phone(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "address":
+				return ec.fieldContext_User_address(ctx, field)
+			case "avatar":
+				return ec.fieldContext_User_avatar(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
+			case "class":
+				return ec.fieldContext_User_class(ctx, field)
+			case "tuition":
+				return ec.fieldContext_User_tuition(ctx, field)
+			case "attendance":
+				return ec.fieldContext_User_attendance(ctx, field)
+			case "lessons_count":
+				return ec.fieldContext_User_lessons_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -2103,6 +2708,269 @@ func (ec *executionContext) fieldContext_Pagination_total(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Payment_id(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Payment_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Payment_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Payment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Payment_price(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Payment_price(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Price, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Payment_price(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Payment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Payment_status(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Payment_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Payment_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Payment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Payment_user(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Payment_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(graph_model.User)
+	fc.Result = res
+	return ec.marshalNUser2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Payment_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Payment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "user_name":
+				return ec.fieldContext_User_user_name(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "status":
+				return ec.fieldContext_User_status(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "date_birth":
+				return ec.fieldContext_User_date_birth(ctx, field)
+			case "phone":
+				return ec.fieldContext_User_phone(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "address":
+				return ec.fieldContext_User_address(ctx, field)
+			case "avatar":
+				return ec.fieldContext_User_avatar(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
+			case "class":
+				return ec.fieldContext_User_class(ctx, field)
+			case "tuition":
+				return ec.fieldContext_User_tuition(ctx, field)
+			case "attendance":
+				return ec.fieldContext_User_attendance(ctx, field)
+			case "lessons_count":
+				return ec.fieldContext_User_lessons_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Payment_tuition(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Payment_tuition(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tuition, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.Tuition)
+	fc.Result = res
+	return ec.marshalOTuition2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Payment_tuition(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Payment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tuition_id(ctx, field)
+			case "total_fee":
+				return ec.fieldContext_Tuition_total_fee(ctx, field)
+			case "discount":
+				return ec.fieldContext_Tuition_discount(ctx, field)
+			case "paid_amount":
+				return ec.fieldContext_Tuition_paid_amount(ctx, field)
+			case "remaining_fee":
+				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
+			case "user":
+				return ec.fieldContext_Tuition_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_authLogin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_authLogin(ctx, field)
 	if err != nil {
@@ -2205,14 +3073,16 @@ func (ec *executionContext) fieldContext_Query_tuition(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Tuition_id(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Tuition_user_id(ctx, field)
-			case "price":
-				return ec.fieldContext_Tuition_price(ctx, field)
-			case "status":
-				return ec.fieldContext_Tuition_status(ctx, field)
-			case "lessons_count":
-				return ec.fieldContext_Tuition_lessons_count(ctx, field)
+			case "total_fee":
+				return ec.fieldContext_Tuition_total_fee(ctx, field)
+			case "discount":
+				return ec.fieldContext_Tuition_discount(ctx, field)
+			case "paid_amount":
+				return ec.fieldContext_Tuition_paid_amount(ctx, field)
+			case "remaining_fee":
+				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
+			case "user":
+				return ec.fieldContext_Tuition_user(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
 		},
@@ -2290,10 +3160,16 @@ func (ec *executionContext) fieldContext_Query_userMe(ctx context.Context, field
 				return ec.fieldContext_User_address(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
 			case "class":
 				return ec.fieldContext_User_class(ctx, field)
 			case "tuition":
 				return ec.fieldContext_User_tuition(ctx, field)
+			case "attendance":
+				return ec.fieldContext_User_attendance(ctx, field)
+			case "lessons_count":
+				return ec.fieldContext_User_lessons_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2983,8 +3859,8 @@ func (ec *executionContext) fieldContext_Tuition_id(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Tuition_user_id(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tuition_user_id(ctx, field)
+func (ec *executionContext) _Tuition_total_fee(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tuition_total_fee(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2997,139 +3873,7 @@ func (ec *executionContext) _Tuition_user_id(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UserID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Tuition_user_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Tuition",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Tuition_price(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tuition_price(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Price, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Tuition_price(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Tuition",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Tuition_status(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tuition_status(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Status, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Tuition_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Tuition",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Tuition_lessons_count(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Tuition_lessons_count(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.LessonsCount, nil
+		return obj.TotalFee, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3146,7 +3890,7 @@ func (ec *executionContext) _Tuition_lessons_count(ctx context.Context, field gr
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Tuition_lessons_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Tuition_total_fee(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Tuition",
 		Field:      field,
@@ -3154,6 +3898,214 @@ func (ec *executionContext) fieldContext_Tuition_lessons_count(ctx context.Conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tuition_discount(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tuition_discount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Discount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tuition_discount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tuition",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tuition_paid_amount(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tuition_paid_amount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PaidAmount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tuition_paid_amount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tuition",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tuition_remaining_fee(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tuition_remaining_fee(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RemainingFee, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tuition_remaining_fee(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tuition",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tuition_user(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tuition_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tuition_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tuition",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "user_name":
+				return ec.fieldContext_User_user_name(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "status":
+				return ec.fieldContext_User_status(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "date_birth":
+				return ec.fieldContext_User_date_birth(ctx, field)
+			case "phone":
+				return ec.fieldContext_User_phone(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "address":
+				return ec.fieldContext_User_address(ctx, field)
+			case "avatar":
+				return ec.fieldContext_User_avatar(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
+			case "class":
+				return ec.fieldContext_User_class(ctx, field)
+			case "tuition":
+				return ec.fieldContext_User_tuition(ctx, field)
+			case "attendance":
+				return ec.fieldContext_User_attendance(ctx, field)
+			case "lessons_count":
+				return ec.fieldContext_User_lessons_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	return fc, nil
@@ -3599,6 +4551,50 @@ func (ec *executionContext) fieldContext_User_avatar(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _User_type(ctx context.Context, field graphql.CollectedField, obj *graph_model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_class(ctx context.Context, field graphql.CollectedField, obj *graph_model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_class(ctx, field)
 	if err != nil {
@@ -3679,9 +4675,9 @@ func (ec *executionContext) _User_tuition(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(graph_model.Tuition)
+	res := resTmp.(*graph_model.Tuition)
 	fc.Result = res
-	return ec.marshalNTuition2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx, field.Selections, res)
+	return ec.marshalNTuition2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_tuition(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3694,16 +4690,118 @@ func (ec *executionContext) fieldContext_User_tuition(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Tuition_id(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Tuition_user_id(ctx, field)
-			case "price":
-				return ec.fieldContext_Tuition_price(ctx, field)
-			case "status":
-				return ec.fieldContext_Tuition_status(ctx, field)
-			case "lessons_count":
-				return ec.fieldContext_Tuition_lessons_count(ctx, field)
+			case "total_fee":
+				return ec.fieldContext_Tuition_total_fee(ctx, field)
+			case "discount":
+				return ec.fieldContext_Tuition_discount(ctx, field)
+			case "paid_amount":
+				return ec.fieldContext_Tuition_paid_amount(ctx, field)
+			case "remaining_fee":
+				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
+			case "user":
+				return ec.fieldContext_Tuition_user(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_attendance(ctx context.Context, field graphql.CollectedField, obj *graph_model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_attendance(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Attendance, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.Attendance)
+	fc.Result = res
+	return ec.marshalNAttendance2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendance(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_attendance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Attendance_id(ctx, field)
+			case "time_check_in":
+				return ec.fieldContext_Attendance_time_check_in(ctx, field)
+			case "status_check_in":
+				return ec.fieldContext_Attendance_status_check_in(ctx, field)
+			case "time_check_out":
+				return ec.fieldContext_Attendance_time_check_out(ctx, field)
+			case "user":
+				return ec.fieldContext_Attendance_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Attendance", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_lessons_count(ctx context.Context, field graphql.CollectedField, obj *graph_model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_lessons_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LessonsCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_lessons_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3768,10 +4866,16 @@ func (ec *executionContext) fieldContext_UserPagination_rows(ctx context.Context
 				return ec.fieldContext_User_address(ctx, field)
 			case "avatar":
 				return ec.fieldContext_User_avatar(ctx, field)
+			case "type":
+				return ec.fieldContext_User_type(ctx, field)
 			case "class":
 				return ec.fieldContext_User_class(ctx, field)
 			case "tuition":
 				return ec.fieldContext_User_tuition(ctx, field)
+			case "attendance":
+				return ec.fieldContext_User_attendance(ctx, field)
+			case "lessons_count":
+				return ec.fieldContext_User_lessons_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -5948,33 +7052,6 @@ func (ec *executionContext) unmarshalInputSchedulesUpdate(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTuitionAdd(ctx context.Context, obj interface{}) (graph_model.TuitionAdd, error) {
-	var it graph_model.TuitionAdd
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"user_id"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "user_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UserID = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputUserAdd(ctx context.Context, obj interface{}) (graph_model.UserAdd, error) {
 	var it graph_model.UserAdd
 	asMap := map[string]interface{}{}
@@ -6286,6 +7363,20 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Class(ctx, sel, obj)
+	case graph_model.MonthlyCheckins:
+		return ec._MonthlyCheckins(ctx, sel, &obj)
+	case *graph_model.MonthlyCheckins:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._MonthlyCheckins(ctx, sel, obj)
+	case graph_model.Payment:
+		return ec._Payment(ctx, sel, &obj)
+	case *graph_model.Payment:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Payment(ctx, sel, obj)
 	case graph_model.Schedules:
 		return ec._Schedules(ctx, sel, &obj)
 	case *graph_model.Schedules:
@@ -6334,6 +7425,11 @@ func (ec *executionContext) _Attendance(ctx context.Context, sel ast.SelectionSe
 			}
 		case "time_check_in":
 			out.Values[i] = ec._Attendance_time_check_in(ctx, field, obj)
+		case "status_check_in":
+			out.Values[i] = ec._Attendance_status_check_in(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "time_check_out":
 			out.Values[i] = ec._Attendance_time_check_out(ctx, field, obj)
 		case "user":
@@ -6525,6 +7621,50 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findMonthlyCheckinsByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findMonthlyCheckinsByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findPaymentByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findPaymentByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "findSchedulesByID":
 			field := field
 
@@ -6614,6 +7754,60 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 	return out
 }
 
+var monthlyCheckinsImplementors = []string{"MonthlyCheckins", "_Entity"}
+
+func (ec *executionContext) _MonthlyCheckins(ctx context.Context, sel ast.SelectionSet, obj *graph_model.MonthlyCheckins) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monthlyCheckinsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonthlyCheckins")
+		case "id":
+			out.Values[i] = ec._MonthlyCheckins_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "month":
+			out.Values[i] = ec._MonthlyCheckins_month(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalCheckins":
+			out.Values[i] = ec._MonthlyCheckins_totalCheckins(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user":
+			out.Values[i] = ec._MonthlyCheckins_user(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var paginationImplementors = []string{"Pagination"}
 
 func (ec *executionContext) _Pagination(ctx context.Context, sel ast.SelectionSet, obj *graph_model.Pagination) graphql.Marshaler {
@@ -6645,6 +7839,62 @@ func (ec *executionContext) _Pagination(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var paymentImplementors = []string{"Payment", "_Entity"}
+
+func (ec *executionContext) _Payment(ctx context.Context, sel ast.SelectionSet, obj *graph_model.Payment) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, paymentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Payment")
+		case "id":
+			out.Values[i] = ec._Payment_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "price":
+			out.Values[i] = ec._Payment_price(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "status":
+			out.Values[i] = ec._Payment_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user":
+			out.Values[i] = ec._Payment_user(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tuition":
+			out.Values[i] = ec._Payment_tuition(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6923,23 +8173,28 @@ func (ec *executionContext) _Tuition(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "user_id":
-			out.Values[i] = ec._Tuition_user_id(ctx, field, obj)
+		case "total_fee":
+			out.Values[i] = ec._Tuition_total_fee(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "price":
-			out.Values[i] = ec._Tuition_price(ctx, field, obj)
+		case "discount":
+			out.Values[i] = ec._Tuition_discount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "status":
-			out.Values[i] = ec._Tuition_status(ctx, field, obj)
+		case "paid_amount":
+			out.Values[i] = ec._Tuition_paid_amount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "lessons_count":
-			out.Values[i] = ec._Tuition_lessons_count(ctx, field, obj)
+		case "remaining_fee":
+			out.Values[i] = ec._Tuition_remaining_fee(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user":
+			out.Values[i] = ec._Tuition_user(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7027,6 +8282,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "type":
+			out.Values[i] = ec._User_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "class":
 			out.Values[i] = ec._User_class(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -7034,6 +8294,16 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "tuition":
 			out.Values[i] = ec._User_tuition(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "attendance":
+			out.Values[i] = ec._User_attendance(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "lessons_count":
+			out.Values[i] = ec._User_lessons_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7523,21 +8793,6 @@ func (ec *executionContext) marshalNClass2ᚖeᚑlearningᚋsrcᚋgraphᚋgenera
 	return ec._Class(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	res := graphql.MarshalFloatContext(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return graphql.WrapContextMarshaler(ctx, res)
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7553,8 +8808,36 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) marshalNMonthlyCheckins2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐMonthlyCheckins(ctx context.Context, sel ast.SelectionSet, v graph_model.MonthlyCheckins) graphql.Marshaler {
+	return ec._MonthlyCheckins(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMonthlyCheckins2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐMonthlyCheckins(ctx context.Context, sel ast.SelectionSet, v *graph_model.MonthlyCheckins) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MonthlyCheckins(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNPagination2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPagination(ctx context.Context, sel ast.SelectionSet, v graph_model.Pagination) graphql.Marshaler {
 	return ec._Pagination(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPayment2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPayment(ctx context.Context, sel ast.SelectionSet, v graph_model.Payment) graphql.Marshaler {
+	return ec._Payment(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPayment2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPayment(ctx context.Context, sel ast.SelectionSet, v *graph_model.Payment) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Payment(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSchedules2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedules(ctx context.Context, sel ast.SelectionSet, v graph_model.Schedules) graphql.Marshaler {
@@ -8118,6 +9401,13 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := graphql.MarshalTime(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOTuition2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx context.Context, sel ast.SelectionSet, v *graph_model.Tuition) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Tuition(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v fedruntime.Entity) graphql.Marshaler {

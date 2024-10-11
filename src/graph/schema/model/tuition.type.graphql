@@ -1,7 +1,8 @@
 type Tuition @key(fields: "id") {
     id: String!
-    user_id: String!
-    price: Float!
-    status: String!
-    lessons_count: Int!
+    total_fee: Int! # hocphitong
+    discount: Int! #hocphi giam gia
+    paid_amount: Int! #hocphi da tra
+    remaining_fee: Int! #hocpphi con lai
+    user: User! @provides(fields: "id")
 }
