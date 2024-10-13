@@ -2,21 +2,21 @@ package cronjob
 
 import (
 	"context"
-	src_const "e-learning/src/const"
 	"e-learning/src/database/collection"
+	model_tuition "e-learning/src/database/model/tuition"
 	model_user "e-learning/src/database/model/user"
-	"e-learning/src/service"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/robfig/cron/v3"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func ComputeTuition() {
 	c := cron.New()
-	c.AddFunc("07 11 * * *", func() {
+	c.AddFunc("45 18 * * *", func() {
 		log.Print("Cron job started")
 		tuition()
 	})
@@ -26,18 +26,19 @@ func ComputeTuition() {
 }
 
 func tuition() {
-	// bbbbbbbb
 	ctx := context.Background()
-	//thời gian tháng trước
+	var t *model_tuition.Tuition
+	// Thời gian tháng trước
 	firstOfThisMonth := time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Now().Location())
 	firstOfLastMonth := firstOfThisMonth.AddDate(0, -1, 0) // Lùi lại 1 tháng
-	lastOfLastMonth := firstOfThisMonth.Add(-time.Second)  // lùi 1s lấy thời điểm tháng trước
+	lastOfLastMonth := firstOfThisMonth.Add(-time.Second)  // Lùi 1 giây lấy thời điểm tháng trước
+
 	fmt.Println("aa", firstOfThisMonth, "bb", firstOfLastMonth, "cc", lastOfLastMonth)
-	// lọc số buổi đi học trong tháng
+
+	// Lọc số buổi đi học trong tháng
 	cursor, err := collection.User().Collection().Find(ctx, bson.M{})
 	if err != nil {
-		codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_User + src_const.InternalError
-		service.AddError(ctx, "", "", codeErr)
+		log.Printf("Error fetching users: %v", err)
 		return
 	}
 	defer cursor.Close(ctx)
@@ -46,11 +47,10 @@ func tuition() {
 		var user model_user.User
 		err := cursor.Decode(&user)
 		if err != nil {
-			codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Class + src_const.InternalError
-			service.AddError(ctx, "", "", codeErr)
+			log.Printf("Error decoding user: %v", err)
 			return
 		}
-		// results = append(results, &user)
+
 		fmt.Println(user.ID)
 		fil01 := bson.M{
 			"user_id": user.ID,
@@ -62,15 +62,31 @@ func tuition() {
 		}
 		c, err := collection.Attendance().Collection().CountDocuments(ctx, fil01)
 		if err != nil {
-			codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Class + src_const.InternalError
-			service.AddError(ctx, "", "", codeErr)
+			log.Printf("Error counting attendance: %v", err)
 			return
 		}
 
-		fmt.Println(c)
+		totalFee := c * 30000
+		t = &model_tuition.Tuition{
+			ID:        primitive.NewObjectID().Hex(),
+			UserID:    user.ID,
+			TotalFee:  int(totalFee),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
 
+		// Tính tổng học phí, phí giảm và tiền cuối cùng
+		i, err := collection.Tuition().Collection().InsertOne(ctx, t)
+		if err != nil {
+			log.Printf("Error inserting tuition: %v", err)
+			return
+		}
+		fmt.Println("Inserted a single document: ", i)
+
+		fmt.Println(c)
 	}
-	// đưa ra số buổi, tính tổng học phí, phí giảm và tiền cuối cùng
-	// lưu thông tin vào database
-	// gửi mail thông báo đóng tiền học phí
+
+	if err := cursor.Err(); err != nil {
+		log.Printf("Cursor error: %v", err)
+	}
 }
