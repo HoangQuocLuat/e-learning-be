@@ -8,6 +8,7 @@ input UserAdd {
     phone: String!
     email: String!
     address: String!
+    user_type: Int
 }
 
 input UserUpdateByAdmin{

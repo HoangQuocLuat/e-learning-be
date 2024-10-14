@@ -9,7 +9,7 @@ type User @key(fields: "id") {
     email: String!
     address: String!
     avatar: String!
-    type: String!
+    user_type: String
     class: Class! @provides(fields: "id")
     tuition: Tuition! @provides(fields: "id")
     attendance: Attendance! @provides(fields: "id")

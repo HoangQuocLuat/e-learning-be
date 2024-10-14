@@ -24,6 +24,7 @@ type UserAddCommand struct {
 	Phone     string
 	Email     string
 	Address   string
+	UserType  int
 }
 
 func (c *UserAddCommand) Valid() error {
@@ -68,6 +69,7 @@ func UserAdd(ctx context.Context, c *UserAddCommand) (result *model_user.User, e
 		Phone:     c.Phone,
 		Email:     c.Email,
 		Address:   c.Address,
+		UserType:  src_const.StudentType[c.UserType],
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		LogsStatus: []model_user.LogStatus{

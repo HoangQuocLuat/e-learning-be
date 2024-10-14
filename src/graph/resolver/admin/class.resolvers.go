@@ -6,7 +6,6 @@ package resolver_admin
 
 import (
 	"context"
-	generated_admin "e-learning/src/graph/generated/admin"
 	graph_model "e-learning/src/graph/generated/model"
 	service_class "e-learning/src/service/class"
 	"fmt"
@@ -61,8 +60,3 @@ func (r *queryResolver) ClassList(ctx context.Context) ([]graph_model.Class, err
 
 	return classList, nil
 }
-
-// Mutation returns generated_admin.MutationResolver implementation.
-func (r *Resolver) Mutation() generated_admin.MutationResolver { return &mutationResolver{r} }
-
-type mutationResolver struct{ *Resolver }

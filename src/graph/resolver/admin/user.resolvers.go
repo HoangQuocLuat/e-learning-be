@@ -26,6 +26,9 @@ func (r *mutationResolver) UserAdd(ctx context.Context, data *graph_model.UserAd
 		Email:     data.Email,
 		Address:   data.Address,
 	}
+	if data.UserType != nil {
+		input.UserType = *data.UserType
+	}
 
 	result, err := service_account.UserAdd(ctx, input)
 	if err != nil {

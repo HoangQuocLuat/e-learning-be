@@ -16,7 +16,7 @@ import (
 
 func ComputeTuition() {
 	c := cron.New()
-	c.AddFunc("45 18 * * *", func() {
+	c.AddFunc("42 10 * * *", func() {
 		log.Print("Cron job started")
 		tuition()
 	})
@@ -28,6 +28,7 @@ func ComputeTuition() {
 func tuition() {
 	ctx := context.Background()
 	var t *model_tuition.Tuition
+	var discount int64
 	// Thời gian tháng trước
 	firstOfThisMonth := time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.Now().Location())
 	firstOfLastMonth := firstOfThisMonth.AddDate(0, -1, 0) // Lùi lại 1 tháng
@@ -66,11 +67,27 @@ func tuition() {
 			return
 		}
 
+		if c == 0 {
+			continue
+		}
+
 		totalFee := c * 30000
+		//kiểm tra thuộc loại nào
+		if user.UserType == "Loại 1" {
+			discount = totalFee - (totalFee * 10 / 100)
+		}
+		if user.UserType == "Loại 2" {
+			discount = totalFee - (totalFee * 20 / 100)
+		}
+		if user.UserType == "" {
+			discount = totalFee
+		}
+
 		t = &model_tuition.Tuition{
 			ID:        primitive.NewObjectID().Hex(),
 			UserID:    user.ID,
 			TotalFee:  int(totalFee),
+			Discount:  int(discount),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}

@@ -19,11 +19,11 @@ type Tuition struct {
 
 func (a *Tuition) ConvertToModelGraph() *graphModel.Tuition {
 	data := graphModel.Tuition{
-		ID:       a.ID,
-		TotalFee: a.TotalFee,
-		// Discount:     a.Discount,
-		// PaidAmount:   a.PaidAmount,
-		// RemainingFee: a.RemainingFee,
+		ID:           a.ID,
+		TotalFee:     a.TotalFee,
+		Discount:     &a.Discount,
+		PaidAmount:   &a.PaidAmount,
+		RemainingFee: &a.RemainingFee,
 		User: &graphModel.User{
 			ID: a.UserID,
 		},

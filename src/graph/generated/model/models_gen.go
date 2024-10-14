@@ -59,6 +59,14 @@ func (MonthlyCheckins) IsEntity() {}
 type Mutation struct {
 }
 
+type Order struct {
+	OrderURL string `json:"order_url"`
+}
+
+type OrderAdd struct {
+	UserID string `json:"user_id"`
+}
+
 type Pagination struct {
 	CurrentPage int `json:"current_page"`
 	Limit       int `json:"limit"`
@@ -68,13 +76,18 @@ type Pagination struct {
 
 type Payment struct {
 	ID      string   `json:"id"`
-	Price   int      `json:"price"`
+	Amount  string   `json:"amount"`
 	Status  string   `json:"status"`
 	User    User     `json:"user"`
 	Tuition *Tuition `json:"tuition,omitempty"`
 }
 
 func (Payment) IsEntity() {}
+
+type PaymentAdd struct {
+	Amount string `json:"amount"`
+	UserID string `json:"user_id"`
+}
 
 type Query struct {
 }
@@ -121,9 +134,12 @@ type SchedulesUpdate struct {
 }
 
 type Tuition struct {
-	ID       string `json:"id"`
-	TotalFee int    `json:"total_fee"`
-	User     *User  `json:"user"`
+	ID           string `json:"id"`
+	TotalFee     int    `json:"total_fee"`
+	Discount     *int   `json:"discount,omitempty"`
+	PaidAmount   *int   `json:"paid_amount,omitempty"`
+	RemainingFee *int   `json:"remaining_fee,omitempty"`
+	User         *User  `json:"user"`
 }
 
 func (Tuition) IsEntity() {}
@@ -139,7 +155,7 @@ type User struct {
 	Email        string      `json:"email"`
 	Address      string      `json:"address"`
 	Avatar       string      `json:"avatar"`
-	Type         string      `json:"type"`
+	UserType     *string     `json:"user_type,omitempty"`
 	Class        *Class      `json:"class"`
 	Tuition      *Tuition    `json:"tuition"`
 	Attendance   *Attendance `json:"attendance"`
@@ -158,6 +174,7 @@ type UserAdd struct {
 	Phone     string `json:"phone"`
 	Email     string `json:"email"`
 	Address   string `json:"address"`
+	UserType  *int   `json:"user_type,omitempty"`
 }
 
 type UserChangePassword struct {
