@@ -1,5 +1,9 @@
 extend type Query {
     tuition(user_id: String!): [Tuition!]!
+    tuitionListByMonth(
+        month: String!,
+        year: String!,
+    ): [Tuition!]! 
 }
 
 # extend type Mutation {

@@ -24,6 +24,7 @@ const (
 	ElementErr_Infor     = "2-"
 	ElementErr_Class     = "3-"
 	ElementErr_Schedules = "4-"
+	ElementErr_Tuition   = "5-"
 )
 
 const (

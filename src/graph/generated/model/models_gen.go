@@ -75,11 +75,11 @@ type Pagination struct {
 }
 
 type Payment struct {
-	ID      string   `json:"id"`
-	Amount  string   `json:"amount"`
-	Status  string   `json:"status"`
-	User    User     `json:"user"`
-	Tuition *Tuition `json:"tuition,omitempty"`
+	ID      string  `json:"id"`
+	Amount  string  `json:"amount"`
+	TransID string  `json:"transID"`
+	User    User    `json:"user"`
+	Tuition Tuition `json:"tuition"`
 }
 
 func (Payment) IsEntity() {}

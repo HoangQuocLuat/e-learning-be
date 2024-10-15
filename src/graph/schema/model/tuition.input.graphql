@@ -1,4 +1,4 @@
-# input TuitionAdd {
+# input TuitionByMonth {
+#     month: String!
 #     user_id: String!
-#     user: User! @provides(fields: "id")
 # }

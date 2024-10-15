@@ -7,10 +7,38 @@ package resolver_admin
 import (
 	"context"
 	graph_model "e-learning/src/graph/generated/model"
+	service_tuition "e-learning/src/service/tuition"
 	"fmt"
 )
 
 // Tuition is the resolver for the tuition field.
 func (r *queryResolver) Tuition(ctx context.Context, userID string) ([]graph_model.Tuition, error) {
 	panic(fmt.Errorf("not implemented: Tuition - tuition"))
+}
+
+// TuitionListByMonth is the resolver for the tuitionListByMonth field.
+func (r *queryResolver) TuitionListByMonth(ctx context.Context, month string, year string) ([]graph_model.Tuition, error) {
+	input := &service_tuition.TuitionGetListCommand{
+		Month: month,
+		Year:  year,
+	}
+	res, err := service_tuition.TuitionGetList(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	var tuitionList []graph_model.Tuition
+	for _, s := range res {
+		tuitionList = append(tuitionList, graph_model.Tuition{
+			ID:           s.ID,
+			TotalFee:     s.TotalFee,
+			Discount:     &s.Discount,
+			PaidAmount:   &s.PaidAmount,
+			RemainingFee: &s.RemainingFee,
+			User: &graph_model.User{
+				ID:   s.UserID,
+				Name: s.Name,
+			},
+		})
+	}
+	return tuitionList, nil
 }

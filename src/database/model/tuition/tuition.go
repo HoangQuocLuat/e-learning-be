@@ -9,6 +9,7 @@ import (
 type Tuition struct {
 	ID           string    `json:"id" bson:"_id"`
 	UserID       string    `json:"user_id" bson:"user_id"`
+	Name         string    `json:"name" bson:"name"`
 	TotalFee     int       `json:"total_fee" bson:"total_fee"`
 	Discount     int       `json:"discount" bson:"discount"`
 	PaidAmount   int       `json:"paid_amount" bson:"paid_amount"`
@@ -25,7 +26,8 @@ func (a *Tuition) ConvertToModelGraph() *graphModel.Tuition {
 		PaidAmount:   &a.PaidAmount,
 		RemainingFee: &a.RemainingFee,
 		User: &graphModel.User{
-			ID: a.UserID,
+			ID:   a.UserID,
+			Name: a.Name,
 		},
 	}
 

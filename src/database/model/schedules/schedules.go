@@ -6,14 +6,13 @@ import (
 	graphModel "e-learning/src/graph/generated/model"
 )
 
-
 type Schedules struct {
 	ID            string    `json:"id" bson:"_id"`
 	ClassID       string    `json:"class_id" bson:"class_id"`
 	ClassName     string    `json:"class_name" bson:"class_name"`
 	Description   string    `json:"description" bson:"description"`
 	SchedulesType string    `json:"schedules_type" bson:"schedules_type"`
-	DayOfWeek     int    `json:"day_of_week" bson:"day_of_week"`
+	DayOfWeek     int       `json:"day_of_week" bson:"day_of_week"`
 	StartTime     time.Time `json:"start_time" bson:"start_time"`
 	EndTime       time.Time `json:"end_time" bson:"end_time"`
 	StartDate     time.Time `json:"start_date" bson:"start_date"`

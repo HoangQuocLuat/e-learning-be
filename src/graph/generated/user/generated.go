@@ -99,7 +99,7 @@ type ComplexityRoot struct {
 	Payment struct {
 		Amount  func(childComplexity int) int
 		ID      func(childComplexity int) int
-		Status  func(childComplexity int) int
+		TransID func(childComplexity int) int
 		Tuition func(childComplexity int) int
 		User    func(childComplexity int) int
 	}
@@ -433,12 +433,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Payment.ID(childComplexity), true
 
-	case "Payment.status":
-		if e.complexity.Payment.Status == nil {
+	case "Payment.transID":
+		if e.complexity.Payment.TransID == nil {
 			break
 		}
 
-		return e.complexity.Payment.Status(childComplexity), true
+		return e.complexity.Payment.TransID(childComplexity), true
 
 	case "Payment.tuition":
 		if e.complexity.Payment.Tuition == nil {
@@ -893,11 +893,10 @@ input SchedulesDelete {
     id: String!
 }
 `, BuiltIn: false},
-	{Name: "../../schema/model/tuition.input.graphql", Input: `# input TuitionAdd {
+	{Name: "../../schema/model/tuition.input.graphql", Input: `# input TuitionByMonth {
+#     month: String!
 #     user_id: String!
-#     user: User! @provides(fields: "id")
-# }
-`, BuiltIn: false},
+# }`, BuiltIn: false},
 	{Name: "../../schema/model/user.input.graphql", Input: `input UserAdd {
     class_id: String!
     user_name: String!
@@ -983,9 +982,9 @@ type Pagination {
 	{Name: "../../schema/model/payment.type.graphql", Input: `type Payment @key(fields: "id") {
     id: String!
     amount: String!
-    status: String!
+    transID: String!
     user: User! @provides(fields: "id")
-    tuition: Tuition @provides(fields: "id")
+    tuition: Tuition! @provides(fields: "id")
 }
 `, BuiltIn: false},
 	{Name: "../../schema/model/schedules.type.graphql", Input: `type Schedules @key(fields: "id") {
@@ -1005,7 +1004,7 @@ type Pagination {
     discount: Int #hocphi giam gia
     paid_amount: Int #hocphi da tra
     remaining_fee: Int #hocpphi con lai
-    user: User! @provides(fields: "id")
+    user: User! @provides(fields: "id name")
 }`, BuiltIn: false},
 	{Name: "../../schema/model/user.type.graphql", Input: `type User @key(fields: "id") {
     id: String!
@@ -2094,8 +2093,8 @@ func (ec *executionContext) fieldContext_Entity_findPaymentByID(ctx context.Cont
 				return ec.fieldContext_Payment_id(ctx, field)
 			case "amount":
 				return ec.fieldContext_Payment_amount(ctx, field)
-			case "status":
-				return ec.fieldContext_Payment_status(ctx, field)
+			case "transID":
+				return ec.fieldContext_Payment_transID(ctx, field)
 			case "user":
 				return ec.fieldContext_Payment_user(ctx, field)
 			case "tuition":
@@ -2865,8 +2864,8 @@ func (ec *executionContext) fieldContext_Payment_amount(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Payment_status(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Payment_status(ctx, field)
+func (ec *executionContext) _Payment_transID(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Payment_transID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2879,7 +2878,7 @@ func (ec *executionContext) _Payment_status(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Status, nil
+		return obj.TransID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2896,7 +2895,7 @@ func (ec *executionContext) _Payment_status(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Payment_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Payment_transID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Payment",
 		Field:      field,
@@ -3006,11 +3005,14 @@ func (ec *executionContext) _Payment_tuition(ctx context.Context, field graphql.
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*graph_model.Tuition)
+	res := resTmp.(graph_model.Tuition)
 	fc.Result = res
-	return ec.marshalOTuition2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx, field.Selections, res)
+	return ec.marshalNTuition2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Payment_tuition(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8047,8 +8049,8 @@ func (ec *executionContext) _Payment(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "status":
-			out.Values[i] = ec._Payment_status(ctx, field, obj)
+		case "transID":
+			out.Values[i] = ec._Payment_transID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8059,6 +8061,9 @@ func (ec *executionContext) _Payment(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "tuition":
 			out.Values[i] = ec._Payment_tuition(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9553,13 +9558,6 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := graphql.MarshalTime(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOTuition2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx context.Context, sel ast.SelectionSet, v *graph_model.Tuition) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Tuition(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v fedruntime.Entity) graphql.Marshaler {

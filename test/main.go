@@ -20,6 +20,7 @@ var (
 
 func main() {
 	data := fmt.Sprintf("%v|%s|%s", appID, appTransID, key1) // appid|apptransid|key1
+	fmt.Println("app", appID, "trans", appTransID, "key1", key1)
 	params := map[string]interface{}{
 		"app_id":       appID,
 		"app_trans_id": appTransID,

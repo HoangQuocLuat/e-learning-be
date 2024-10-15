@@ -1,7 +1,7 @@
 type Payment @key(fields: "id") {
     id: String!
     amount: String!
-    status: String!
+    transID: String!
     user: User! @provides(fields: "id")
-    tuition: Tuition @provides(fields: "id")
+    tuition: Tuition! @provides(fields: "id")
 }
