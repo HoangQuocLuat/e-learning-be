@@ -752,6 +752,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSchedulesAdd,
 		ec.unmarshalInputSchedulesDelete,
 		ec.unmarshalInputSchedulesUpdate,
+		ec.unmarshalInputTuitionUpdate,
 		ec.unmarshalInputUserAdd,
 		ec.unmarshalInputUserChangePassword,
 		ec.unmarshalInputUserDelete,
@@ -893,10 +894,13 @@ input SchedulesDelete {
     id: String!
 }
 `, BuiltIn: false},
-	{Name: "../../schema/model/tuition.input.graphql", Input: `# input TuitionByMonth {
-#     month: String!
-#     user_id: String!
-# }`, BuiltIn: false},
+	{Name: "../../schema/model/tuition.input.graphql", Input: `input TuitionUpdate {
+    id: String!
+    total_fee: Int # hocphitong
+    discount: Int #hocphi giam gia
+    paid_amount: Int #hocphi da tra
+    remaining_fee: Int #hocpphi con lai
+}`, BuiltIn: false},
 	{Name: "../../schema/model/user.input.graphql", Input: `input UserAdd {
     class_id: String!
     user_name: String!
@@ -7166,6 +7170,61 @@ func (ec *executionContext) unmarshalInputSchedulesUpdate(ctx context.Context, o
 				return it, err
 			}
 			it.SchedulesType = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTuitionUpdate(ctx context.Context, obj interface{}) (graph_model.TuitionUpdate, error) {
+	var it graph_model.TuitionUpdate
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "total_fee", "discount", "paid_amount", "remaining_fee"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "total_fee":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("total_fee"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TotalFee = data
+		case "discount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("discount"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Discount = data
+		case "paid_amount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paid_amount"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PaidAmount = data
+		case "remaining_fee":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remaining_fee"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemainingFee = data
 		}
 	}
 

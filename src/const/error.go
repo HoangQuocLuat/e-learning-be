@@ -39,6 +39,8 @@ const (
 	UnableCreateToken = "1.5"
 
 	ClassExist = "2.1"
+
+	TuitionExist = "5.1"
 )
 
 const (

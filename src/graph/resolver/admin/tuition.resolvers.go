@@ -11,6 +11,23 @@ import (
 	"fmt"
 )
 
+// TuitionUpdate is the resolver for the tuitionUpdate field.
+func (r *mutationResolver) TuitionUpdate(ctx context.Context, data *graph_model.TuitionUpdate) (*graph_model.Tuition, error) {
+	input := &service_tuition.TuitionUpdateCommand{
+		ID:           data.ID,
+		TotalFee:     data.TotalFee,
+		Discount:     data.Discount,
+		PaidAmount:   data.PaidAmount,
+		RemainingFee: data.RemainingFee,
+	}
+
+	res, err := service_tuition.TuitionUpdate(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	return res.ConvertToModelGraph(), nil
+}
+
 // Tuition is the resolver for the tuition field.
 func (r *queryResolver) Tuition(ctx context.Context, userID string) ([]graph_model.Tuition, error) {
 	panic(fmt.Errorf("not implemented: Tuition - tuition"))

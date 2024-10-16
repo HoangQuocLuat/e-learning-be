@@ -73,7 +73,8 @@ func v1(r chi.Router) {
 			r.Post("/image", service_user.UploadImage)
 		})
 		r.Route("/ws", func(r chi.Router) {
-			r.Get("/check", service_rest.CheckFace)
+			r.Get("/checkIn", service_rest.CheckInFace)
+			r.Get("/checkOut", service_rest.CheckOutFace)
 		})
 		r.Route("/payment", func(r chi.Router) {
 			r.Post("/order", service_rest_zalo_payment.Order)

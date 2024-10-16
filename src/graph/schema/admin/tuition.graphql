@@ -6,6 +6,6 @@ extend type Query {
     ): [Tuition!]! 
 }
 
-# extend type Mutation {
-#     # tuitionAdd(data: TuitionAdd): Tuition!
-# }
+extend type Mutation {
+    tuitionUpdate(data: TuitionUpdate): Tuition!
+}

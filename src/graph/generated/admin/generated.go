@@ -94,6 +94,7 @@ type ComplexityRoot struct {
 		SchedulesAdd    func(childComplexity int, data *graph_model.SchedulesAdd) int
 		SchedulesDelete func(childComplexity int, data *graph_model.SchedulesDelete) int
 		SchedulesUpdate func(childComplexity int, data *graph_model.SchedulesUpdate) int
+		TuitionUpdate   func(childComplexity int, data *graph_model.TuitionUpdate) int
 		UserAdd         func(childComplexity int, data *graph_model.UserAdd) int
 		UserDelete      func(childComplexity int, data *graph_model.UserDelete) int
 		UserUpdate      func(childComplexity int, data *graph_model.UserUpdateByAdmin) int
@@ -197,6 +198,7 @@ type MutationResolver interface {
 	SchedulesAdd(ctx context.Context, data *graph_model.SchedulesAdd) (*graph_model.Schedules, error)
 	SchedulesDelete(ctx context.Context, data *graph_model.SchedulesDelete) (bool, error)
 	SchedulesUpdate(ctx context.Context, data *graph_model.SchedulesUpdate) (*graph_model.Schedules, error)
+	TuitionUpdate(ctx context.Context, data *graph_model.TuitionUpdate) (*graph_model.Tuition, error)
 	UserAdd(ctx context.Context, data *graph_model.UserAdd) (*graph_model.User, error)
 	UserUpdate(ctx context.Context, data *graph_model.UserUpdateByAdmin) (*graph_model.User, error)
 	UserDelete(ctx context.Context, data *graph_model.UserDelete) (bool, error)
@@ -503,6 +505,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.SchedulesUpdate(childComplexity, args["data"].(*graph_model.SchedulesUpdate)), true
+
+	case "Mutation.tuitionUpdate":
+		if e.complexity.Mutation.TuitionUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_tuitionUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.TuitionUpdate(childComplexity, args["data"].(*graph_model.TuitionUpdate)), true
 
 	case "Mutation.userAdd":
 		if e.complexity.Mutation.UserAdd == nil {
@@ -963,6 +977,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSchedulesAdd,
 		ec.unmarshalInputSchedulesDelete,
 		ec.unmarshalInputSchedulesUpdate,
+		ec.unmarshalInputTuitionUpdate,
 		ec.unmarshalInputUserAdd,
 		ec.unmarshalInputUserChangePassword,
 		ec.unmarshalInputUserDelete,
@@ -1119,10 +1134,13 @@ input SchedulesDelete {
     id: String!
 }
 `, BuiltIn: false},
-	{Name: "../../schema/model/tuition.input.graphql", Input: `# input TuitionByMonth {
-#     month: String!
-#     user_id: String!
-# }`, BuiltIn: false},
+	{Name: "../../schema/model/tuition.input.graphql", Input: `input TuitionUpdate {
+    id: String!
+    total_fee: Int # hocphitong
+    discount: Int #hocphi giam gia
+    paid_amount: Int #hocphi da tra
+    remaining_fee: Int #hocpphi con lai
+}`, BuiltIn: false},
 	{Name: "../../schema/model/user.input.graphql", Input: `input UserAdd {
     class_id: String!
     user_name: String!
@@ -1293,9 +1311,9 @@ extend type Mutation {
     ): [Tuition!]! 
 }
 
-# extend type Mutation {
-#     # tuitionAdd(data: TuitionAdd): Tuition!
-# }
+extend type Mutation {
+    tuitionUpdate(data: TuitionUpdate): Tuition!
+}
 `, BuiltIn: false},
 	{Name: "../../schema/admin/user.graphql", Input: `extend type Query {
     userPagination(
@@ -1555,6 +1573,21 @@ func (ec *executionContext) field_Mutation_schedulesUpdate_args(ctx context.Cont
 	if tmp, ok := rawArgs["data"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
 		arg0, err = ec.unmarshalOSchedulesUpdate2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedulesUpdate(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_tuitionUpdate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *graph_model.TuitionUpdate
+	if tmp, ok := rawArgs["data"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+		arg0, err = ec.unmarshalOTuitionUpdate2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuitionUpdate(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3519,6 +3552,75 @@ func (ec *executionContext) fieldContext_Mutation_schedulesUpdate(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_schedulesUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_tuitionUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_tuitionUpdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TuitionUpdate(rctx, fc.Args["data"].(*graph_model.TuitionUpdate))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.Tuition)
+	fc.Result = res
+	return ec.marshalNTuition2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_tuitionUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tuition_id(ctx, field)
+			case "total_fee":
+				return ec.fieldContext_Tuition_total_fee(ctx, field)
+			case "discount":
+				return ec.fieldContext_Tuition_discount(ctx, field)
+			case "paid_amount":
+				return ec.fieldContext_Tuition_paid_amount(ctx, field)
+			case "remaining_fee":
+				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
+			case "user":
+				return ec.fieldContext_Tuition_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_tuitionUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -8684,6 +8786,61 @@ func (ec *executionContext) unmarshalInputSchedulesUpdate(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTuitionUpdate(ctx context.Context, obj interface{}) (graph_model.TuitionUpdate, error) {
+	var it graph_model.TuitionUpdate
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "total_fee", "discount", "paid_amount", "remaining_fee"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "total_fee":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("total_fee"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TotalFee = data
+		case "discount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("discount"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Discount = data
+		case "paid_amount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paid_amount"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PaidAmount = data
+		case "remaining_fee":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remaining_fee"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemainingFee = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserAdd(ctx context.Context, obj interface{}) (graph_model.UserAdd, error) {
 	var it graph_model.UserAdd
 	asMap := map[string]interface{}{}
@@ -9511,6 +9668,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "schedulesUpdate":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_schedulesUpdate(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tuitionUpdate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_tuitionUpdate(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -11565,6 +11729,14 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := graphql.MarshalTime(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOTuitionUpdate2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuitionUpdate(ctx context.Context, v interface{}) (*graph_model.TuitionUpdate, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTuitionUpdate(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOUserAdd2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐUserAdd(ctx context.Context, v interface{}) (*graph_model.UserAdd, error) {

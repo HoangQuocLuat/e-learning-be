@@ -144,6 +144,14 @@ type Tuition struct {
 
 func (Tuition) IsEntity() {}
 
+type TuitionUpdate struct {
+	ID           string `json:"id"`
+	TotalFee     *int   `json:"total_fee,omitempty"`
+	Discount     *int   `json:"discount,omitempty"`
+	PaidAmount   *int   `json:"paid_amount,omitempty"`
+	RemainingFee *int   `json:"remaining_fee,omitempty"`
+}
+
 type User struct {
 	ID           string      `json:"id"`
 	UserName     string      `json:"user_name"`
