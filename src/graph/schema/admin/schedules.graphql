@@ -1,5 +1,4 @@
 extend type Query {
-    schedules(classID: String!): [Schedules!]!
     schedulesList: [Schedules!]!
 }
 

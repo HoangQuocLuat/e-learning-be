@@ -71,7 +71,7 @@ func schedules() {
 		if scheduleTime.Sub(nowTime) <= time.Hour && scheduleTime.Sub(nowTime) >= 0 {
 			subject := fmt.Sprintf("Reminder: Class %s is starting soon", schedule.ClassName)
 			body := fmt.Sprintf("Class %s will start at %s.", schedule.ClassName, schedule.StartTime.Format("15:04"))
-			if err := sendMail("hoangquocluatspak@gmail.com", subject, body); err != nil {
+			if err := SendMail("hoangquocluatspak@gmail.com", subject, body); err != nil {
 				log.Println("Error sending email:", err)
 			}
 		}
@@ -79,7 +79,7 @@ func schedules() {
 		if schedule.EndTime.Sub(now) <= 30*time.Minute && schedule.EndTime.Sub(now) > 0 {
 			subject := fmt.Sprintf("Reminder: Class %s is ending soon", schedule.ClassName)
 			body := fmt.Sprintf("Class %s will end at %s.", schedule.ClassName, schedule.EndTime.Format("15:04"))
-			if err := sendMail("hoangquocluatspak@gmail.com", subject, body); err != nil {
+			if err := SendMail("hoangquocluatspak@gmail.com", subject, body); err != nil {
 				log.Println("Error sending email:", err)
 			}
 		}
@@ -90,7 +90,7 @@ func schedules() {
 	}
 }
 
-func sendMail(email string, header string, body string) error {
+func SendMail(email string, header string, body string) error {
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", "hoangquocluatspak@gmail.com")
 	msg.SetHeader("To", email)

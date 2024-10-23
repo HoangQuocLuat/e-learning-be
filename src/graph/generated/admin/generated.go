@@ -123,7 +123,6 @@ type ComplexityRoot struct {
 		Attendance         func(childComplexity int, userID string) int
 		AuthAdminLogin     func(childComplexity int, userName string, password string) int
 		ClassList          func(childComplexity int) int
-		Schedules          func(childComplexity int, classID string) int
 		SchedulesList      func(childComplexity int) int
 		Tuition            func(childComplexity int, userID string) int
 		TuitionListByMonth func(childComplexity int, month string, year string) int
@@ -207,7 +206,6 @@ type QueryResolver interface {
 	Attendance(ctx context.Context, userID string) ([]graph_model.Attendance, error)
 	AuthAdminLogin(ctx context.Context, userName string, password string) (*graph_model.AuthLoginResponse, error)
 	ClassList(ctx context.Context) ([]graph_model.Class, error)
-	Schedules(ctx context.Context, classID string) ([]graph_model.Schedules, error)
 	SchedulesList(ctx context.Context) ([]graph_model.Schedules, error)
 	Tuition(ctx context.Context, userID string) ([]graph_model.Tuition, error)
 	TuitionListByMonth(ctx context.Context, month string, year string) ([]graph_model.Tuition, error)
@@ -654,18 +652,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ClassList(childComplexity), true
-
-	case "Query.schedules":
-		if e.complexity.Query.Schedules == nil {
-			break
-		}
-
-		args, err := ec.field_Query_schedules_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Schedules(childComplexity, args["classID"].(string)), true
 
 	case "Query.schedulesList":
 		if e.complexity.Query.SchedulesList == nil {
@@ -1293,7 +1279,6 @@ extend type Mutation {
     addOrder(data: OrderAdd!): Order!
 }`, BuiltIn: false},
 	{Name: "../../schema/admin/schedules.graphql", Input: `extend type Query {
-    schedules(classID: String!): [Schedules!]!
     schedulesList: [Schedules!]!
 }
 
@@ -1707,21 +1692,6 @@ func (ec *executionContext) field_Query_authAdminLogin_args(ctx context.Context,
 		}
 	}
 	args["password"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_schedules_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["classID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("classID"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["classID"] = arg0
 	return args, nil
 }
 
@@ -4520,81 +4490,6 @@ func (ec *executionContext) fieldContext_Query_classList(ctx context.Context, fi
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Class", field.Name)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_schedules(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_schedules(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Schedules(rctx, fc.Args["classID"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]graph_model.Schedules)
-	fc.Result = res
-	return ec.marshalNSchedules2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedulesᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_schedules(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Schedules_id(ctx, field)
-			case "day_of_week":
-				return ec.fieldContext_Schedules_day_of_week(ctx, field)
-			case "start_date":
-				return ec.fieldContext_Schedules_start_date(ctx, field)
-			case "end_date":
-				return ec.fieldContext_Schedules_end_date(ctx, field)
-			case "start_time":
-				return ec.fieldContext_Schedules_start_time(ctx, field)
-			case "end_time":
-				return ec.fieldContext_Schedules_end_time(ctx, field)
-			case "schedules_type":
-				return ec.fieldContext_Schedules_schedules_type(ctx, field)
-			case "description":
-				return ec.fieldContext_Schedules_description(ctx, field)
-			case "class":
-				return ec.fieldContext_Schedules_class(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Schedules", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_schedules_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
@@ -9948,28 +9843,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_classList(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "schedules":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_schedules(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}

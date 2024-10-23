@@ -42,30 +42,6 @@ func (r *mutationResolver) SchedulesUpdate(ctx context.Context, data *graph_mode
 	panic(fmt.Errorf("not implemented: SchedulesUpdate - schedulesUpdate"))
 }
 
-// Schedules is the resolver for the schedules field.
-func (r *queryResolver) Schedules(ctx context.Context, classID string) ([]graph_model.Schedules, error) {
-	input := &service_schedules.SchedulesByIDCommand{
-		ClassID: classID,
-	}
-
-	result, err := service_schedules.SchedulesByClassID(ctx, input)
-	if err != nil {
-		return nil, err
-	}
-
-	var schedulesList []graph_model.Schedules
-	for _, d := range result {
-		schedulesList = append(schedulesList, graph_model.Schedules{
-			ID:            d.ID,
-			StartTime:     d.StartTime,
-			EndTime:       d.EndTime,
-			SchedulesType: d.SchedulesType,
-		})
-	}
-
-	return schedulesList, nil
-}
-
 // SchedulesList is the resolver for the schedulesList field.
 func (r *queryResolver) SchedulesList(ctx context.Context) ([]graph_model.Schedules, error) {
 	result, err := service_schedules.SchedulesGetList(ctx, nil)

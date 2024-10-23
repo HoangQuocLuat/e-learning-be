@@ -106,6 +106,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		AuthLogin          func(childComplexity int, userName string, password string) int
+		Schedules          func(childComplexity int, userID string) int
 		Tuition            func(childComplexity int, userID string) int
 		UserMe             func(childComplexity int) int
 		__resolve__service func(childComplexity int) int
@@ -172,6 +173,7 @@ type EntityResolver interface {
 }
 type QueryResolver interface {
 	AuthLogin(ctx context.Context, userName string, password string) (*graph_model.AuthLoginResponse, error)
+	Schedules(ctx context.Context, userID string) ([]graph_model.Schedules, error)
 	Tuition(ctx context.Context, userID string) (*graph_model.Tuition, error)
 	UserMe(ctx context.Context) (*graph_model.User, error)
 }
@@ -465,6 +467,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.AuthLogin(childComplexity, args["user_name"].(string), args["password"].(string)), true
+
+	case "Query.schedules":
+		if e.complexity.Query.Schedules == nil {
+			break
+		}
+
+		args, err := ec.field_Query_schedules_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Schedules(childComplexity, args["userID"].(string)), true
 
 	case "Query.tuition":
 		if e.complexity.Query.Tuition == nil {
@@ -1036,6 +1050,9 @@ type UserPagination {
     authLogin(user_name: String!, password: String!): AuthLoginResponse!
 }
 `, BuiltIn: false},
+	{Name: "../../schema/user/schedules.graphql", Input: `extend type Query {
+    schedules(userID: String!): [Schedules!]!
+}`, BuiltIn: false},
 	{Name: "../../schema/user/tuition.graphql", Input: `extend type Query {
     tuition(user_id: String!): Tuition!
 }`, BuiltIn: false},
@@ -1239,6 +1256,21 @@ func (ec *executionContext) field_Query_authLogin_args(ctx context.Context, rawA
 		}
 	}
 	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_schedules_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
 	return args, nil
 }
 
@@ -3101,6 +3133,81 @@ func (ec *executionContext) fieldContext_Query_authLogin(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_authLogin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_schedules(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_schedules(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Schedules(rctx, fc.Args["userID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]graph_model.Schedules)
+	fc.Result = res
+	return ec.marshalNSchedules2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedulesᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_schedules(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Schedules_id(ctx, field)
+			case "day_of_week":
+				return ec.fieldContext_Schedules_day_of_week(ctx, field)
+			case "start_date":
+				return ec.fieldContext_Schedules_start_date(ctx, field)
+			case "end_date":
+				return ec.fieldContext_Schedules_end_date(ctx, field)
+			case "start_time":
+				return ec.fieldContext_Schedules_start_time(ctx, field)
+			case "end_time":
+				return ec.fieldContext_Schedules_end_time(ctx, field)
+			case "schedules_type":
+				return ec.fieldContext_Schedules_schedules_type(ctx, field)
+			case "description":
+				return ec.fieldContext_Schedules_description(ctx, field)
+			case "class":
+				return ec.fieldContext_Schedules_class(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Schedules", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_schedules_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -8187,6 +8294,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "schedules":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_schedules(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "tuition":
 			field := field
 
@@ -9058,6 +9187,50 @@ func (ec *executionContext) marshalNPayment2ᚖeᚑlearningᚋsrcᚋgraphᚋgene
 
 func (ec *executionContext) marshalNSchedules2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedules(ctx context.Context, sel ast.SelectionSet, v graph_model.Schedules) graphql.Marshaler {
 	return ec._Schedules(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSchedules2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedulesᚄ(ctx context.Context, sel ast.SelectionSet, v []graph_model.Schedules) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSchedules2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedules(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNSchedules2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedules(ctx context.Context, sel ast.SelectionSet, v *graph_model.Schedules) graphql.Marshaler {

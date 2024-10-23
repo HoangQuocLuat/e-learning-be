@@ -16,7 +16,7 @@ import (
 
 func ComputeTuition() {
 	c := cron.New()
-	c.AddFunc("42 10 * * *", func() {
+	c.AddFunc("47 10 * * *", func() {
 		log.Print("Cron job started")
 		tuition()
 	})
@@ -34,8 +34,6 @@ func tuition() {
 	firstOfLastMonth := firstOfThisMonth.AddDate(0, -1, 0) // Lùi lại 1 tháng
 	lastOfLastMonth := firstOfThisMonth.Add(-time.Second)  // Lùi 1 giây lấy thời điểm tháng trước
 
-	fmt.Println("aa", firstOfThisMonth, "bb", firstOfLastMonth, "cc", lastOfLastMonth)
-
 	// Lọc số buổi đi học trong tháng
 	cursor, err := collection.User().Collection().Find(ctx, bson.M{})
 	if err != nil {
@@ -52,7 +50,6 @@ func tuition() {
 			return
 		}
 
-		fmt.Println(user.ID)
 		fil01 := bson.M{
 			"user_id": user.ID,
 			"time_check_in": bson.M{
@@ -99,8 +96,11 @@ func tuition() {
 			return
 		}
 		fmt.Println("Inserted a single document: ", i)
-
-		fmt.Println(c)
+		subject := fmt.Sprintf("Noti: Đã có học phí tháng %d - năm %d", firstOfThisMonth.Month(), firstOfThisMonth.Year())
+		body := fmt.Sprintf("Học phí tháng này:- Tổng tiền học %dVnĐ- Số tiền cần trả sau khi giảm %dVnĐ", totalFee, discount)
+		if err := SendMail("hoangquocluatspak@gmail.com", subject, body); err != nil {
+			log.Println("Error sending email:", err)
+		}
 	}
 
 	if err := cursor.Err(); err != nil {
