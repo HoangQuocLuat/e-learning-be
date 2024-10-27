@@ -79,6 +79,7 @@ func v1(r chi.Router) {
 		r.Route("/payment", func(r chi.Router) {
 			r.Post("/order", service_rest_zalo_payment.Order)
 			r.Post("/check", service_rest_zalo_payment.CheckPay)
+			r.Post("/callback", service_rest_zalo_payment.CallbackPayment)
 		})
 	})
 }

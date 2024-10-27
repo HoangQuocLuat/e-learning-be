@@ -1,0 +1,2 @@
+start ngrok 
+    ngrok http http://localhost:8080

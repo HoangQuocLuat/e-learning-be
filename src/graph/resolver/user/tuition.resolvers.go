@@ -7,10 +7,17 @@ package resolver_user
 import (
 	"context"
 	graph_model "e-learning/src/graph/generated/model"
-	"fmt"
+	service_tuition "e-learning/src/service/tuition"
 )
 
 // Tuition is the resolver for the tuition field.
 func (r *queryResolver) Tuition(ctx context.Context, userID string) (*graph_model.Tuition, error) {
-	panic(fmt.Errorf("not implemented: Tuition - tuition"))
+	input := &service_tuition.TuitionByIDCommand{
+		UserID: userID,
+	}
+	res, err := service_tuition.TuitionGetByID(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	return res.ConvertToModelGraph(), nil
 }

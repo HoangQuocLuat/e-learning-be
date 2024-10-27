@@ -2,6 +2,11 @@ package service_rest_zalo_payment
 
 import (
 	"context"
+	src_const "e-learning/src/const"
+	"e-learning/src/database/collection"
+	model_tuition "e-learning/src/database/model/tuition"
+	service_rest_req "e-learning/src/service/service.rest/request"
+	service_rest_resp "e-learning/src/service/service.rest/response"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,15 +17,8 @@ import (
 	"strconv"
 	"time"
 
-	src_const "e-learning/src/const"
-	"e-learning/src/database/collection"
-	model_tuition "e-learning/src/database/model/tuition"
-	service_rest_req "e-learning/src/service/service.rest/request"
-	service_rest_resp "e-learning/src/service/service.rest/response"
-
-	"go.mongodb.org/mongo-driver/bson"
-
 	"github.com/zpmep/hmacutil"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type object map[string]interface{}
@@ -52,8 +50,22 @@ func Order(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("aaa", tuition)
 
+	if tuition.RemainingFee == 0 {
+		responseData := service_rest_resp.Response{
+			Status:  "PaymentCompleted",
+			Message: "Hoc phi da thanh toan",
+			Data:    nil,
+		}
+		if err := json.NewEncoder(w).Encode(responseData); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
 	//data fix cứng
-	embedData, _ := json.Marshal(object{})
+	embedData, _ := json.Marshal(object{
+		"redirecturl": "https://be0a-27-76-204-201.ngrok-free.app/",
+	})
 	fixedItems := []map[string]interface{}{
 		{
 			"itemid":       "knb",
