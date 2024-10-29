@@ -1,5 +1,5 @@
 extend type Query {
-    tuition(user_id: String!): [Tuition!]!
+    tuition(user_id: String!): Tuition!
     tuitionListByMonth(
         month: String!,
         year: String!,

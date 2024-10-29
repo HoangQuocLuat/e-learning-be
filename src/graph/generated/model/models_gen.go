@@ -78,15 +78,17 @@ type Payment struct {
 	ID      string  `json:"id"`
 	Amount  string  `json:"amount"`
 	TransID string  `json:"transID"`
+	Status  string  `json:"status"`
 	User    User    `json:"user"`
 	Tuition Tuition `json:"tuition"`
+	Date    *string `json:"date,omitempty"`
 }
 
 func (Payment) IsEntity() {}
 
-type PaymentAdd struct {
-	Amount string `json:"amount"`
-	UserID string `json:"user_id"`
+type PaymentPagination struct {
+	Rows   []Payment  `json:"rows"`
+	Paging Pagination `json:"paging"`
 }
 
 type Query struct {
@@ -134,15 +136,21 @@ type SchedulesUpdate struct {
 }
 
 type Tuition struct {
-	ID           string `json:"id"`
-	TotalFee     int    `json:"total_fee"`
-	Discount     *int   `json:"discount,omitempty"`
-	PaidAmount   *int   `json:"paid_amount,omitempty"`
-	RemainingFee *int   `json:"remaining_fee,omitempty"`
-	User         *User  `json:"user"`
+	ID           string  `json:"id"`
+	TotalFee     int     `json:"total_fee"`
+	Discount     *int    `json:"discount,omitempty"`
+	PaidAmount   *int    `json:"paid_amount,omitempty"`
+	RemainingFee *int    `json:"remaining_fee,omitempty"`
+	User         *User   `json:"user"`
+	Month        *string `json:"month,omitempty"`
 }
 
 func (Tuition) IsEntity() {}
+
+type TuitionPagination struct {
+	Rows   []Tuition  `json:"rows"`
+	Paging Pagination `json:"paging"`
+}
 
 type TuitionUpdate struct {
 	ID           string `json:"id"`

@@ -5,4 +5,10 @@ type Tuition @key(fields: "id") {
     paid_amount: Int #hocphi da tra
     remaining_fee: Int #hocpphi con lai
     user: User! @provides(fields: "id name")
+    month: String
+}
+
+type TuitionPagination {
+    rows: [Tuition!]!
+    paging: Pagination!
 }

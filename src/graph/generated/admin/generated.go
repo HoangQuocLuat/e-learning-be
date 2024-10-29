@@ -113,16 +113,24 @@ type ComplexityRoot struct {
 
 	Payment struct {
 		Amount  func(childComplexity int) int
+		Date    func(childComplexity int) int
 		ID      func(childComplexity int) int
+		Status  func(childComplexity int) int
 		TransID func(childComplexity int) int
 		Tuition func(childComplexity int) int
 		User    func(childComplexity int) int
+	}
+
+	PaymentPagination struct {
+		Paging func(childComplexity int) int
+		Rows   func(childComplexity int) int
 	}
 
 	Query struct {
 		Attendance         func(childComplexity int, userID string) int
 		AuthAdminLogin     func(childComplexity int, userName string, password string) int
 		ClassList          func(childComplexity int) int
+		PaymentPagination  func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
 		SchedulesList      func(childComplexity int) int
 		Tuition            func(childComplexity int, userID string) int
 		TuitionListByMonth func(childComplexity int, month string, year string) int
@@ -146,10 +154,16 @@ type ComplexityRoot struct {
 	Tuition struct {
 		Discount     func(childComplexity int) int
 		ID           func(childComplexity int) int
+		Month        func(childComplexity int) int
 		PaidAmount   func(childComplexity int) int
 		RemainingFee func(childComplexity int) int
 		TotalFee     func(childComplexity int) int
 		User         func(childComplexity int) int
+	}
+
+	TuitionPagination struct {
+		Paging func(childComplexity int) int
+		Rows   func(childComplexity int) int
 	}
 
 	User struct {
@@ -206,8 +220,9 @@ type QueryResolver interface {
 	Attendance(ctx context.Context, userID string) ([]graph_model.Attendance, error)
 	AuthAdminLogin(ctx context.Context, userName string, password string) (*graph_model.AuthLoginResponse, error)
 	ClassList(ctx context.Context) ([]graph_model.Class, error)
+	PaymentPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.PaymentPagination, error)
 	SchedulesList(ctx context.Context) ([]graph_model.Schedules, error)
-	Tuition(ctx context.Context, userID string) ([]graph_model.Tuition, error)
+	Tuition(ctx context.Context, userID string) (*graph_model.Tuition, error)
 	TuitionListByMonth(ctx context.Context, month string, year string) ([]graph_model.Tuition, error)
 	UserPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.UserPagination, error)
 }
@@ -594,12 +609,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Payment.Amount(childComplexity), true
 
+	case "Payment.date":
+		if e.complexity.Payment.Date == nil {
+			break
+		}
+
+		return e.complexity.Payment.Date(childComplexity), true
+
 	case "Payment.id":
 		if e.complexity.Payment.ID == nil {
 			break
 		}
 
 		return e.complexity.Payment.ID(childComplexity), true
+
+	case "Payment.status":
+		if e.complexity.Payment.Status == nil {
+			break
+		}
+
+		return e.complexity.Payment.Status(childComplexity), true
 
 	case "Payment.transID":
 		if e.complexity.Payment.TransID == nil {
@@ -621,6 +650,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Payment.User(childComplexity), true
+
+	case "PaymentPagination.paging":
+		if e.complexity.PaymentPagination.Paging == nil {
+			break
+		}
+
+		return e.complexity.PaymentPagination.Paging(childComplexity), true
+
+	case "PaymentPagination.rows":
+		if e.complexity.PaymentPagination.Rows == nil {
+			break
+		}
+
+		return e.complexity.PaymentPagination.Rows(childComplexity), true
 
 	case "Query.attendance":
 		if e.complexity.Query.Attendance == nil {
@@ -652,6 +695,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ClassList(childComplexity), true
+
+	case "Query.paymentPagination":
+		if e.complexity.Query.PaymentPagination == nil {
+			break
+		}
+
+		args, err := ec.field_Query_paymentPagination_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PaymentPagination(childComplexity, args["page"].(int), args["limit"].(int), args["order_by"].(*string), args["search"].(map[string]interface{})), true
 
 	case "Query.schedulesList":
 		if e.complexity.Query.SchedulesList == nil {
@@ -792,6 +847,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tuition.ID(childComplexity), true
 
+	case "Tuition.month":
+		if e.complexity.Tuition.Month == nil {
+			break
+		}
+
+		return e.complexity.Tuition.Month(childComplexity), true
+
 	case "Tuition.paid_amount":
 		if e.complexity.Tuition.PaidAmount == nil {
 			break
@@ -819,6 +881,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tuition.User(childComplexity), true
+
+	case "TuitionPagination.paging":
+		if e.complexity.TuitionPagination.Paging == nil {
+			break
+		}
+
+		return e.complexity.TuitionPagination.Paging(childComplexity), true
+
+	case "TuitionPagination.rows":
+		if e.complexity.TuitionPagination.Rows == nil {
+			break
+		}
+
+		return e.complexity.TuitionPagination.Rows(childComplexity), true
 
 	case "User.address":
 		if e.complexity.User.Address == nil {
@@ -959,7 +1035,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputClassDelete,
 		ec.unmarshalInputClassUpdate,
 		ec.unmarshalInputOrderAdd,
-		ec.unmarshalInputPaymentAdd,
 		ec.unmarshalInputSchedulesAdd,
 		ec.unmarshalInputSchedulesDelete,
 		ec.unmarshalInputSchedulesUpdate,
@@ -1089,10 +1164,6 @@ input ClassByID {
 }
 
 `, BuiltIn: false},
-	{Name: "../../schema/model/payment.input.graphql", Input: `input PaymentAdd {
-    amount: String!
-    user_id: String!
-}`, BuiltIn: false},
 	{Name: "../../schema/model/schedules.input.graphql", Input: `input SchedulesAdd {
     class_id: String!
     day_of_week: Int!
@@ -1213,10 +1284,16 @@ type Pagination {
     id: String!
     amount: String!
     transID: String!
-    user: User! @provides(fields: "id")
+    status: String!
+    user: User! @provides(fields: "id name")
     tuition: Tuition! @provides(fields: "id")
+    date: String
 }
-`, BuiltIn: false},
+
+type PaymentPagination {
+    rows: [Payment!]!
+    paging: Pagination!
+}`, BuiltIn: false},
 	{Name: "../../schema/model/schedules.type.graphql", Input: `type Schedules @key(fields: "id") {
     id: String!
     day_of_week: Int!
@@ -1235,6 +1312,12 @@ type Pagination {
     paid_amount: Int #hocphi da tra
     remaining_fee: Int #hocpphi con lai
     user: User! @provides(fields: "id name")
+    month: String
+}
+
+type TuitionPagination {
+    rows: [Tuition!]!
+    paging: Pagination!
 }`, BuiltIn: false},
 	{Name: "../../schema/model/user.type.graphql", Input: `type User @key(fields: "id") {
     id: String!
@@ -1278,6 +1361,15 @@ extend type Mutation {
 	{Name: "../../schema/admin/order.graphql", Input: `type Mutation {
     addOrder(data: OrderAdd!): Order!
 }`, BuiltIn: false},
+	{Name: "../../schema/admin/payment.graphql", Input: `extend type Query {
+    paymentPagination(
+        page: Int!
+        limit: Int!
+        order_by: String
+        search: Map
+    ): PaymentPagination!
+}
+`, BuiltIn: false},
 	{Name: "../../schema/admin/schedules.graphql", Input: `extend type Query {
     schedulesList: [Schedules!]!
 }
@@ -1289,7 +1381,7 @@ extend type Mutation {
 }
 `, BuiltIn: false},
 	{Name: "../../schema/admin/tuition.graphql", Input: `extend type Query {
-    tuition(user_id: String!): [Tuition!]!
+    tuition(user_id: String!): Tuition!
     tuitionListByMonth(
         month: String!,
         year: String!,
@@ -1692,6 +1784,48 @@ func (ec *executionContext) field_Query_authAdminLogin_args(ctx context.Context,
 		}
 	}
 	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_paymentPagination_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["order_by"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("order_by"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["order_by"] = arg2
+	var arg3 map[string]interface{}
+	if tmp, ok := rawArgs["search"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("search"))
+		arg3, err = ec.unmarshalOMap2map(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["search"] = arg3
 	return args, nil
 }
 
@@ -2618,10 +2752,14 @@ func (ec *executionContext) fieldContext_Entity_findPaymentByID(ctx context.Cont
 				return ec.fieldContext_Payment_amount(ctx, field)
 			case "transID":
 				return ec.fieldContext_Payment_transID(ctx, field)
+			case "status":
+				return ec.fieldContext_Payment_status(ctx, field)
 			case "user":
 				return ec.fieldContext_Payment_user(ctx, field)
 			case "tuition":
 				return ec.fieldContext_Payment_tuition(ctx, field)
+			case "date":
+				return ec.fieldContext_Payment_date(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Payment", field.Name)
 		},
@@ -2766,6 +2904,8 @@ func (ec *executionContext) fieldContext_Entity_findTuitionByID(ctx context.Cont
 				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
 			case "user":
 				return ec.fieldContext_Tuition_user(ctx, field)
+			case "month":
+				return ec.fieldContext_Tuition_month(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
 		},
@@ -3579,6 +3719,8 @@ func (ec *executionContext) fieldContext_Mutation_tuitionUpdate(ctx context.Cont
 				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
 			case "user":
 				return ec.fieldContext_Tuition_user(ctx, field)
+			case "month":
+				return ec.fieldContext_Tuition_month(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
 		},
@@ -4178,6 +4320,50 @@ func (ec *executionContext) fieldContext_Payment_transID(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Payment_status(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Payment_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Payment_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Payment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Payment_user(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Payment_user(ctx, field)
 	if err != nil {
@@ -4305,8 +4491,165 @@ func (ec *executionContext) fieldContext_Payment_tuition(ctx context.Context, fi
 				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
 			case "user":
 				return ec.fieldContext_Tuition_user(ctx, field)
+			case "month":
+				return ec.fieldContext_Tuition_month(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Payment_date(ctx context.Context, field graphql.CollectedField, obj *graph_model.Payment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Payment_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Payment_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Payment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PaymentPagination_rows(ctx context.Context, field graphql.CollectedField, obj *graph_model.PaymentPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PaymentPagination_rows(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rows, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]graph_model.Payment)
+	fc.Result = res
+	return ec.marshalNPayment2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPaymentᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PaymentPagination_rows(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PaymentPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Payment_id(ctx, field)
+			case "amount":
+				return ec.fieldContext_Payment_amount(ctx, field)
+			case "transID":
+				return ec.fieldContext_Payment_transID(ctx, field)
+			case "status":
+				return ec.fieldContext_Payment_status(ctx, field)
+			case "user":
+				return ec.fieldContext_Payment_user(ctx, field)
+			case "tuition":
+				return ec.fieldContext_Payment_tuition(ctx, field)
+			case "date":
+				return ec.fieldContext_Payment_date(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Payment", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PaymentPagination_paging(ctx context.Context, field graphql.CollectedField, obj *graph_model.PaymentPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PaymentPagination_paging(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Paging, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(graph_model.Pagination)
+	fc.Result = res
+	return ec.marshalNPagination2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPagination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PaymentPagination_paging(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PaymentPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "current_page":
+				return ec.fieldContext_Pagination_current_page(ctx, field)
+			case "limit":
+				return ec.fieldContext_Pagination_limit(ctx, field)
+			case "total_pages":
+				return ec.fieldContext_Pagination_total_pages(ctx, field)
+			case "total":
+				return ec.fieldContext_Pagination_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Pagination", field.Name)
 		},
 	}
 	return fc, nil
@@ -4494,6 +4837,67 @@ func (ec *executionContext) fieldContext_Query_classList(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_paymentPagination(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_paymentPagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().PaymentPagination(rctx, fc.Args["page"].(int), fc.Args["limit"].(int), fc.Args["order_by"].(*string), fc.Args["search"].(map[string]interface{}))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.PaymentPagination)
+	fc.Result = res
+	return ec.marshalNPaymentPagination2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPaymentPagination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_paymentPagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "rows":
+				return ec.fieldContext_PaymentPagination_rows(ctx, field)
+			case "paging":
+				return ec.fieldContext_PaymentPagination_paging(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaymentPagination", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_paymentPagination_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_schedulesList(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_schedulesList(ctx, field)
 	if err != nil {
@@ -4584,9 +4988,9 @@ func (ec *executionContext) _Query_tuition(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]graph_model.Tuition)
+	res := resTmp.(*graph_model.Tuition)
 	fc.Result = res
-	return ec.marshalNTuition2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuitionᚄ(ctx, field.Selections, res)
+	return ec.marshalNTuition2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_tuition(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4609,6 +5013,8 @@ func (ec *executionContext) fieldContext_Query_tuition(ctx context.Context, fiel
 				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
 			case "user":
 				return ec.fieldContext_Tuition_user(ctx, field)
+			case "month":
+				return ec.fieldContext_Tuition_month(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
 		},
@@ -4678,6 +5084,8 @@ func (ec *executionContext) fieldContext_Query_tuitionListByMonth(ctx context.Co
 				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
 			case "user":
 				return ec.fieldContext_Tuition_user(ctx, field)
+			case "month":
+				return ec.fieldContext_Tuition_month(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
 		},
@@ -5682,6 +6090,161 @@ func (ec *executionContext) fieldContext_Tuition_user(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Tuition_month(ctx context.Context, field graphql.CollectedField, obj *graph_model.Tuition) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tuition_month(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Month, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tuition_month(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tuition",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TuitionPagination_rows(ctx context.Context, field graphql.CollectedField, obj *graph_model.TuitionPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TuitionPagination_rows(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rows, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]graph_model.Tuition)
+	fc.Result = res
+	return ec.marshalNTuition2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuitionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TuitionPagination_rows(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TuitionPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tuition_id(ctx, field)
+			case "total_fee":
+				return ec.fieldContext_Tuition_total_fee(ctx, field)
+			case "discount":
+				return ec.fieldContext_Tuition_discount(ctx, field)
+			case "paid_amount":
+				return ec.fieldContext_Tuition_paid_amount(ctx, field)
+			case "remaining_fee":
+				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
+			case "user":
+				return ec.fieldContext_Tuition_user(ctx, field)
+			case "month":
+				return ec.fieldContext_Tuition_month(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TuitionPagination_paging(ctx context.Context, field graphql.CollectedField, obj *graph_model.TuitionPagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TuitionPagination_paging(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Paging, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(graph_model.Pagination)
+	fc.Result = res
+	return ec.marshalNPagination2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPagination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TuitionPagination_paging(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TuitionPagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "current_page":
+				return ec.fieldContext_Pagination_current_page(ctx, field)
+			case "limit":
+				return ec.fieldContext_Pagination_limit(ctx, field)
+			case "total_pages":
+				return ec.fieldContext_Pagination_total_pages(ctx, field)
+			case "total":
+				return ec.fieldContext_Pagination_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Pagination", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *graph_model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_id(ctx, field)
 	if err != nil {
@@ -6268,6 +6831,8 @@ func (ec *executionContext) fieldContext_User_tuition(ctx context.Context, field
 				return ec.fieldContext_Tuition_remaining_fee(ctx, field)
 			case "user":
 				return ec.fieldContext_Tuition_user(ctx, field)
+			case "month":
+				return ec.fieldContext_Tuition_month(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tuition", field.Name)
 		},
@@ -8461,40 +9026,6 @@ func (ec *executionContext) unmarshalInputOrderAdd(ctx context.Context, obj inte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPaymentAdd(ctx context.Context, obj interface{}) (graph_model.PaymentAdd, error) {
-	var it graph_model.PaymentAdd
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"amount", "user_id"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "amount":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Amount = data
-		case "user_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UserID = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputSchedulesAdd(ctx context.Context, obj interface{}) (graph_model.SchedulesAdd, error) {
 	var it graph_model.SchedulesAdd
 	asMap := map[string]interface{}{}
@@ -9737,6 +10268,11 @@ func (ec *executionContext) _Payment(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "status":
+			out.Values[i] = ec._Payment_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "user":
 			out.Values[i] = ec._Payment_user(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -9744,6 +10280,52 @@ func (ec *executionContext) _Payment(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "tuition":
 			out.Values[i] = ec._Payment_tuition(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "date":
+			out.Values[i] = ec._Payment_date(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var paymentPaginationImplementors = []string{"PaymentPagination"}
+
+func (ec *executionContext) _PaymentPagination(ctx context.Context, sel ast.SelectionSet, obj *graph_model.PaymentPagination) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, paymentPaginationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PaymentPagination")
+		case "rows":
+			out.Values[i] = ec._PaymentPagination_rows(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "paging":
+			out.Values[i] = ec._PaymentPagination_paging(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -9843,6 +10425,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_classList(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "paymentPagination":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_paymentPagination(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -10126,6 +10730,52 @@ func (ec *executionContext) _Tuition(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Tuition_remaining_fee(ctx, field, obj)
 		case "user":
 			out.Values[i] = ec._Tuition_user(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "month":
+			out.Values[i] = ec._Tuition_month(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var tuitionPaginationImplementors = []string{"TuitionPagination"}
+
+func (ec *executionContext) _TuitionPagination(ctx context.Context, sel ast.SelectionSet, obj *graph_model.TuitionPagination) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tuitionPaginationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TuitionPagination")
+		case "rows":
+			out.Values[i] = ec._TuitionPagination_rows(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "paging":
+			out.Values[i] = ec._TuitionPagination_paging(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -10865,6 +11515,50 @@ func (ec *executionContext) marshalNPayment2eᚑlearningᚋsrcᚋgraphᚋgenerat
 	return ec._Payment(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNPayment2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPaymentᚄ(ctx context.Context, sel ast.SelectionSet, v []graph_model.Payment) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPayment2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPayment(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNPayment2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPayment(ctx context.Context, sel ast.SelectionSet, v *graph_model.Payment) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -10873,6 +11567,20 @@ func (ec *executionContext) marshalNPayment2ᚖeᚑlearningᚋsrcᚋgraphᚋgene
 		return graphql.Null
 	}
 	return ec._Payment(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPaymentPagination2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPaymentPagination(ctx context.Context, sel ast.SelectionSet, v graph_model.PaymentPagination) graphql.Marshaler {
+	return ec._PaymentPagination(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPaymentPagination2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPaymentPagination(ctx context.Context, sel ast.SelectionSet, v *graph_model.PaymentPagination) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PaymentPagination(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSchedules2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedules(ctx context.Context, sel ast.SelectionSet, v graph_model.Schedules) graphql.Marshaler {

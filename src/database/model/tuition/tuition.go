@@ -19,6 +19,7 @@ type Tuition struct {
 }
 
 func (a *Tuition) ConvertToModelGraph() *graphModel.Tuition {
+	m := a.CreatedAt.Format("2006-01")
 	data := graphModel.Tuition{
 		ID:           a.ID,
 		TotalFee:     a.TotalFee,
@@ -29,6 +30,7 @@ func (a *Tuition) ConvertToModelGraph() *graphModel.Tuition {
 			ID:   a.UserID,
 			Name: a.Name,
 		},
+		Month: &m,
 	}
 
 	return &data

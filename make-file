@@ -1,2 +1,4 @@
 start ngrok 
-    ngrok http http://localhost:8080
+    ngrok http 8080
+restart nginx
+    sudo systemctl restart nginx

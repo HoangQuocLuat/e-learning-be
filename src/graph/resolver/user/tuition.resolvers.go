@@ -8,6 +8,8 @@ import (
 	"context"
 	graph_model "e-learning/src/graph/generated/model"
 	service_tuition "e-learning/src/service/tuition"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 // Tuition is the resolver for the tuition field.
@@ -20,4 +22,43 @@ func (r *queryResolver) Tuition(ctx context.Context, userID string) (*graph_mode
 		return nil, err
 	}
 	return res.ConvertToModelGraph(), nil
+}
+
+// TuitionPagination is the resolver for the tuitionPagination field.
+func (r *queryResolver) TuitionPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.TuitionPagination, error) {
+	input := &service_tuition.TuitionPaginationCommand{
+		Page:  page,
+		Limit: limit,
+	}
+
+	if orderBy != nil {
+		input.OrderBy = *orderBy
+	}
+
+	if search != nil {
+		input.Search = search
+	}
+
+	total, result, err := service_tuition.TuitionPagination(ctx, input)
+	if err != nil {
+		if graphql.GetErrors(ctx) == nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+
+	tuitions := make([]graph_model.Tuition, 0)
+	for i := 0; i < len(result); i++ {
+		tuitions = append(tuitions, *result[i].ConvertToModelGraph())
+	}
+
+	return &graph_model.TuitionPagination{
+		Rows: tuitions,
+		Paging: graph_model.Pagination{
+			CurrentPage: page,
+			Limit:       limit,
+			TotalPages:  CalculateTotalPage(total, limit),
+			Total:       total,
+		},
+	}, nil
 }

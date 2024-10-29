@@ -1,4 +1,0 @@
-input PaymentAdd {
-    amount: String!
-    user_id: String!
-}

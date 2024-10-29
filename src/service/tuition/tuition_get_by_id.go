@@ -8,6 +8,7 @@ import (
 	"e-learning/src/service"
 	"fmt"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -36,7 +37,18 @@ func TuitionGetByID(ctx context.Context, c *TuitionByIDCommand) (results *model_
 		service.AddError(ctx, "", "", codeErr)
 		return nil, fmt.Errorf(codeErr)
 	}
-	err = collection.Tuition().Collection().FindOne(ctx, bson.M{"user_id": c.UserID}).Decode(&results)
+	now := time.Now()
+
+	startDate := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	endDate := startDate.AddDate(0, 1, 0).Add(-time.Second)
+	find := bson.M{
+		"user_id": c.UserID,
+		"created_at": bson.M{
+			"$gte": startDate,
+			"$lte": endDate,
+		},
+	}
+	err = collection.Tuition().Collection().FindOne(ctx, find).Decode(&results)
 	if err != nil {
 		codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
 		service.AddError(ctx, "", "", codeErr)

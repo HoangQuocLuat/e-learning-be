@@ -27,6 +27,9 @@ type Config struct {
 	ExpiresTimeAccessToken  int
 	ExpiresTimeRefreshToken int
 
+	ApiCallBack string
+	ApiRedirect string
+
 	AccessTokenType  string
 	RefreshTokenType string
 

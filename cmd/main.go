@@ -106,6 +106,5 @@ func Serve(c *cli.Context) error {
 	face_config.InitRecognizer(dataDir)
 	go func() { cronjob.NotifyWithTimeBySchedules() }()
 	go func() { cronjob.ComputeTuition()}()
-
 	return server.ServeGraph(c.Context, c.String("addr-graph"))
 }

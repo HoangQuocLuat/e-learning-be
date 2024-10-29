@@ -2,8 +2,10 @@ package service_rest_zalo_payment
 
 import (
 	"context"
+	"e-learning/config"
 	src_const "e-learning/src/const"
 	"e-learning/src/database/collection"
+	model_payment "e-learning/src/database/model/payment"
 	model_tuition "e-learning/src/database/model/tuition"
 	service_rest_req "e-learning/src/service/service.rest/request"
 	service_rest_resp "e-learning/src/service/service.rest/response"
@@ -19,6 +21,7 @@ import (
 
 	"github.com/zpmep/hmacutil"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type object map[string]interface{}
@@ -48,7 +51,6 @@ func Order(w http.ResponseWriter, r *http.Request) {
 		log.Println("find err ", err)
 		return
 	}
-	fmt.Println("aaa", tuition)
 
 	if tuition.RemainingFee == 0 {
 		responseData := service_rest_resp.Response{
@@ -64,23 +66,11 @@ func Order(w http.ResponseWriter, r *http.Request) {
 
 	//data fix cứng
 	embedData, _ := json.Marshal(object{
-		"redirecturl": "https://be0a-27-76-204-201.ngrok-free.app/",
+		"redirecturl": config.Get().ApiRedirect,
 	})
-	fixedItems := []map[string]interface{}{
-		{
-			"itemid":       "knb",
-			"itemname":     "kim nguyen bao",
-			"itemprice":    198400,
-			"itemquantity": 1,
-		},
-	}
-	items, _ := json.Marshal(fixedItems)
-
+	items, _ := json.Marshal([]object{})
 	now := time.Now()
 	trannnID := fmt.Sprintf("%02d%02d%02d_%v", now.Year()%100, int(now.Month()), now.Day(), transID)
-	// log.Println(tuition.Discount)
-	// log.Println("app_id", src_const.App_id, " app_user", req.AppUser, " item_id", string(items), "amount ", strconv.Itoa(tuition.Discount))
-	// request data cho url zalo pay
 	params := make(url.Values)
 	params.Add("app_id", src_const.App_id)
 	params.Add("amount", strconv.Itoa(tuition.Discount))
@@ -90,6 +80,7 @@ func Order(w http.ResponseWriter, r *http.Request) {
 	params.Add("description", "Thanh toan hoc phi #"+strconv.Itoa(transID))
 	params.Add("bank_code", "zalopayapp")
 	params.Add("app_time", strconv.FormatInt(now.UnixNano()/int64(time.Millisecond), 10)) // miliseconds
+	params.Add("callback_url", config.Get().ApiCallBack)
 
 	params.Add("app_trans_id", trannnID) // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
 
@@ -111,6 +102,24 @@ func Order(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(ress, &result); err != nil {
 		log.Fatal(err)
 	}
+	//tạo payment để trạng thái là đang thanh toán
+	payment := &model_payment.Payment{
+		ID:        primitive.NewObjectID().Hex(),
+		UserID:    req.AppUser,
+		TuitionID: tuition.ID,
+		Status:    src_const.MapPaymentStatus[1],
+		TransID:   trannnID,
+		Amount:    strconv.Itoa(tuition.Discount),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	_, err = collection.Payment().Collection().InsertOne(ctx, payment)
+	if err != nil {
+		log.Println("err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	responseData := service_rest_resp.Response{
 		Status:  "success",
 		Message: "Request processed successfully",
@@ -122,5 +131,4 @@ func Order(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(responseData); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
 }

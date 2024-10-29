@@ -29,7 +29,7 @@ func (r *mutationResolver) TuitionUpdate(ctx context.Context, data *graph_model.
 }
 
 // Tuition is the resolver for the tuition field.
-func (r *queryResolver) Tuition(ctx context.Context, userID string) ([]graph_model.Tuition, error) {
+func (r *queryResolver) Tuition(ctx context.Context, userID string) (*graph_model.Tuition, error) {
 	panic(fmt.Errorf("not implemented: Tuition - tuition"))
 }
 
@@ -58,4 +58,14 @@ func (r *queryResolver) TuitionListByMonth(ctx context.Context, month string, ye
 		})
 	}
 	return tuitionList, nil
+}
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) TuitionPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.TuitionPagination, error) {
+	panic(fmt.Errorf("not implemented: TuitionPagination - tuitionPagination"))
 }

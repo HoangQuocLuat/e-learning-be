@@ -2,6 +2,13 @@ type Payment @key(fields: "id") {
     id: String!
     amount: String!
     transID: String!
-    user: User! @provides(fields: "id")
+    status: String!
+    user: User! @provides(fields: "id name")
     tuition: Tuition! @provides(fields: "id")
+    date: String
+}
+
+type PaymentPagination {
+    rows: [Payment!]!
+    paging: Pagination!
 }
