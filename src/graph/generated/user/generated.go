@@ -112,13 +112,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AuthLogin          func(childComplexity int, userName string, password string) int
-		Schedules          func(childComplexity int, userID string) int
-		Tuition            func(childComplexity int, userID string) int
-		TuitionPagination  func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
-		UserMe             func(childComplexity int) int
-		__resolve__service func(childComplexity int) int
-		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
+		AuthLogin             func(childComplexity int, userName string, password string) int
+		PaymentPaginationByID func(childComplexity int, page int, limit int, id string, orderBy *string, search map[string]interface{}) int
+		Schedules             func(childComplexity int, userID string) int
+		Tuition               func(childComplexity int, userID string) int
+		TuitionPagination     func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
+		UserMe                func(childComplexity int) int
+		__resolve__service    func(childComplexity int) int
+		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
 	}
 
 	Schedules struct {
@@ -187,6 +188,7 @@ type EntityResolver interface {
 }
 type QueryResolver interface {
 	AuthLogin(ctx context.Context, userName string, password string) (*graph_model.AuthLoginResponse, error)
+	PaymentPaginationByID(ctx context.Context, page int, limit int, id string, orderBy *string, search map[string]interface{}) (*graph_model.PaymentPagination, error)
 	Schedules(ctx context.Context, userID string) ([]graph_model.Schedules, error)
 	Tuition(ctx context.Context, userID string) (*graph_model.Tuition, error)
 	TuitionPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.TuitionPagination, error)
@@ -510,6 +512,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.AuthLogin(childComplexity, args["user_name"].(string), args["password"].(string)), true
+
+	case "Query.paymentPaginationByID":
+		if e.complexity.Query.PaymentPaginationByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_paymentPaginationByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PaymentPaginationByID(childComplexity, args["page"].(int), args["limit"].(int), args["id"].(string), args["order_by"].(*string), args["search"].(map[string]interface{})), true
 
 	case "Query.schedules":
 		if e.complexity.Query.Schedules == nil {
@@ -1133,6 +1147,16 @@ type UserPagination {
     authLogin(user_name: String!, password: String!): AuthLoginResponse!
 }
 `, BuiltIn: false},
+	{Name: "../../schema/user/payment.graphql", Input: `extend type Query {
+    paymentPaginationByID(
+        page: Int!
+        limit: Int!
+        id: String!
+        order_by: String
+        search: Map
+    ): PaymentPagination!
+}
+`, BuiltIn: false},
 	{Name: "../../schema/user/schedules.graphql", Input: `extend type Query {
     schedules(userID: String!): [Schedules!]!
 }`, BuiltIn: false},
@@ -1343,6 +1367,57 @@ func (ec *executionContext) field_Query_authLogin_args(ctx context.Context, rawA
 		}
 	}
 	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_paymentPaginationByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["order_by"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("order_by"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["order_by"] = arg3
+	var arg4 map[string]interface{}
+	if tmp, ok := rawArgs["search"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("search"))
+		arg4, err = ec.unmarshalOMap2map(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["search"] = arg4
 	return args, nil
 }
 
@@ -3469,6 +3544,67 @@ func (ec *executionContext) fieldContext_Query_authLogin(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_authLogin_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_paymentPaginationByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_paymentPaginationByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().PaymentPaginationByID(rctx, fc.Args["page"].(int), fc.Args["limit"].(int), fc.Args["id"].(string), fc.Args["order_by"].(*string), fc.Args["search"].(map[string]interface{}))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.PaymentPagination)
+	fc.Result = res
+	return ec.marshalNPaymentPagination2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPaymentPagination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_paymentPaginationByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "rows":
+				return ec.fieldContext_PaymentPagination_rows(ctx, field)
+			case "paging":
+				return ec.fieldContext_PaymentPagination_paging(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaymentPagination", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_paymentPaginationByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -8867,6 +9003,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "paymentPaginationByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_paymentPaginationByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "schedules":
 			field := field
 
@@ -9868,6 +10026,20 @@ func (ec *executionContext) marshalNPayment2ᚖeᚑlearningᚋsrcᚋgraphᚋgene
 		return graphql.Null
 	}
 	return ec._Payment(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPaymentPagination2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPaymentPagination(ctx context.Context, sel ast.SelectionSet, v graph_model.PaymentPagination) graphql.Marshaler {
+	return ec._PaymentPagination(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPaymentPagination2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPaymentPagination(ctx context.Context, sel ast.SelectionSet, v *graph_model.PaymentPagination) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PaymentPagination(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSchedules2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐSchedules(ctx context.Context, sel ast.SelectionSet, v graph_model.Schedules) graphql.Marshaler {

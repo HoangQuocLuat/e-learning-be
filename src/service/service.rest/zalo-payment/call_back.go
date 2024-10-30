@@ -17,6 +17,7 @@ import (
 )
 
 func CallbackPayment(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("jfdjfkdjfkdjkfjd")
 	var ctx context.Context
 	defer r.Body.Close()
 	var cbdata map[string]interface{}

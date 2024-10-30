@@ -29,6 +29,7 @@ type Config struct {
 
 	ApiCallBack string
 	ApiRedirect string
+	ApiCheck    string
 
 	AccessTokenType  string
 	RefreshTokenType string

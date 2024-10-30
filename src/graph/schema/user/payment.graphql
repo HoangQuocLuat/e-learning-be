@@ -1,0 +1,9 @@
+extend type Query {
+    paymentPaginationByID(
+        page: Int!
+        limit: Int!
+        id: String!
+        order_by: String
+        search: Map
+    ): PaymentPagination!
+}

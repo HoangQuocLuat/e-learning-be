@@ -81,14 +81,15 @@ func Order(w http.ResponseWriter, r *http.Request) {
 	params.Add("bank_code", "zalopayapp")
 	params.Add("app_time", strconv.FormatInt(now.UnixNano()/int64(time.Millisecond), 10)) // miliseconds
 	params.Add("callback_url", config.Get().ApiCallBack)
+	params.Add("expire_duration_seconds", "300")
 
 	params.Add("app_trans_id", trannnID) // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
 
 	// appid|app_trans_id|appuser|amount|apptime|embeddata|item
 	data := fmt.Sprintf("%v|%v|%v|%v|%v|%v|%v", params.Get("app_id"), params.Get("app_trans_id"), params.Get("app_user"),
 		params.Get("amount"), params.Get("app_time"), params.Get("embed_data"), params.Get("item"))
-
-	params.Add("mac", hmacutil.HexStringEncode(hmacutil.SHA256, src_const.Key1, data))
+	mac := hmacutil.HexStringEncode(hmacutil.SHA256, src_const.Key1, data)
+	params.Add("mac", mac)
 
 	// Content-Type: application/x-www-form-urlencoded
 	res, err := http.PostForm("https://sb-openapi.zalopay.vn/v2/create", params)
@@ -113,6 +114,7 @@ func Order(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
+	fmt.Println("payment: ", payment)
 	_, err = collection.Payment().Collection().InsertOne(ctx, payment)
 	if err != nil {
 		log.Println("err", err)
@@ -130,5 +132,26 @@ func Order(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewEncoder(w).Encode(responseData); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	go func() {
+		for {
+			status := Check(trannnID)
+			if status == "failed" {
+				// Cập nhật trạng thái thanh toán trong database
+				updatePaymentStatus(trannnID, src_const.MapPaymentStatus[2])
+				break
+			}
+			// time.Sleep(10 * time.Second) // Đợi 10 giây trước khi gọi lại
+		}
+	}()
+}
+
+func updatePaymentStatus(transID string, status string) {
+	filter := bson.M{"trans_id": transID}
+	update := bson.M{"$set": bson.M{"status": status, "updated_at": time.Now()}}
+
+	_, err := collection.Payment().Collection().UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Println("update error", err)
 	}
 }

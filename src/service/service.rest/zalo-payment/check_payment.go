@@ -74,9 +74,9 @@ func CheckPay(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(ress, &result); err != nil {
 		log.Fatal(err)
 	}
-
+	fmt.Println("return code", result.ReturnCode)
 	// lưu vào data base thông tin giao dịch
-	if result.ReturnCode == 1 {
+	if result.ReturnCode == 3 {
 		payment := &model_payment.Payment{
 			ID:        primitive.NewObjectID().Hex(),
 			UserID:    req.UserID,
