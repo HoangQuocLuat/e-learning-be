@@ -11,7 +11,7 @@ var MapDayOfWeek = map[int]string{
 }
 
 var MapSchedulesType = map[int]string{
-	0: "Học cố định",
-	1: "Học bù",
-	2: "Làm kiểm tra",
+	0: "Học bình thường",
+	1: "Làm kiểm tra",
+	2: "Học bù",
 }

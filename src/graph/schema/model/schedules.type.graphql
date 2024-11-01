@@ -1,8 +1,7 @@
 type Schedules @key(fields: "id") {
     id: String!
     day_of_week: Int!
-    start_date: Time!
-    end_date: Time!
+    day: Time!
     start_time: Time!
     end_time: Time!
     schedules_type: String!

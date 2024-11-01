@@ -23,10 +23,9 @@ func (r *queryResolver) Schedules(ctx context.Context, userID string) ([]graph_m
 			ID:            d.ID,
 			StartTime:     d.StartTime,
 			EndTime:       d.EndTime,
-			StartDate:     d.StartDate,
-			EndDate:       d.EndDate,
 			Description:   d.Description,
 			DayOfWeek:     d.DayOfWeek,
+			Day:           d.Day,
 			SchedulesType: d.SchedulesType})
 	}
 	return schedulesList, nil

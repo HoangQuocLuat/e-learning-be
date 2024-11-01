@@ -13,10 +13,9 @@ type Schedules struct {
 	Description   string    `json:"description" bson:"description"`
 	SchedulesType string    `json:"schedules_type" bson:"schedules_type"`
 	DayOfWeek     int       `json:"day_of_week" bson:"day_of_week"`
+	Day           time.Time `json:"day" bson:"day"`
 	StartTime     time.Time `json:"start_time" bson:"start_time"`
 	EndTime       time.Time `json:"end_time" bson:"end_time"`
-	StartDate     time.Time `json:"start_date" bson:"start_date"`
-	EndDate       time.Time `json:"end_date" bson:"end_date"`
 	CreatedAt     time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at" bson:"updated_at"`
 }
@@ -27,8 +26,7 @@ func (a *Schedules) ConvertToModelGraph() *graphModel.Schedules {
 		Description:   a.Description,
 		SchedulesType: a.SchedulesType,
 		DayOfWeek:     a.DayOfWeek,
-		StartDate:     a.StartDate,
-		EndDate:       a.EndDate,
+		Day:           a.Day,
 		StartTime:     a.StartTime,
 		EndTime:       a.EndTime,
 		Class: &graphModel.Class{

@@ -105,6 +105,6 @@ func Serve(c *cli.Context) error {
 	kafka_config.InitKafkaProducer()
 	face_config.InitRecognizer(dataDir)
 	go func() { cronjob.NotifyWithTimeBySchedules() }()
-	go func() { cronjob.ComputeTuition()}()
+	go func() { cronjob.ComputeTuition() }()
 	return server.ServeGraph(c.Context, c.String("addr-graph"))
 }

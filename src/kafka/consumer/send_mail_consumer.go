@@ -21,8 +21,8 @@ func (c *SendMailConsumer) Consumer(mess *kafka.Message) error {
 	abc := gomail.NewMessage()
 	abc.SetHeader("From", "hoangquocluatspak@gmail.com")
 	abc.SetHeader("To", email)
-	abc.SetHeader("Subject", "Lịch đã được thêm mới")
-	abc.SetBody("text/plain", "Lịch đã được thêm mới, hãy kiểm tra lại lịch")
+	abc.SetHeader("Subject", "Lịch học thay đổi")
+	abc.SetBody("text/plain", "Lịch được thay đổi xin hãy kiểm tra lại lịch")
 
 	// Sử dụng mật khẩu ứng dụng nếu xác thực 2 bước được bật
 	dialer := gomail.NewDialer("smtp.gmail.com", 587, "hoangquocluatspak@gmail.com", "tyyk yafp tpdr qgio")

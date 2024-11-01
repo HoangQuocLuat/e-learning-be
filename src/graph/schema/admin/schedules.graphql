@@ -3,7 +3,7 @@ extend type Query {
 }
 
 extend type Mutation {
-    schedulesAdd(data: SchedulesAdd): Schedules!
+    schedulesAdd(data: SchedulesAdd): [Schedules!]!
     schedulesDelete(data: SchedulesDelete): Boolean!
     schedulesUpdate(data: SchedulesUpdate): Schedules!
 }

@@ -29,7 +29,7 @@ type SchedulesAddCommand struct {
 	DayOfWeek     int
 }
 
-func SchedulesAdd(ctx context.Context, c *SchedulesAddCommand) (result *model_schedules.Schedules, err error) {
+func SchedulesAdd(ctx context.Context, c *SchedulesAddCommand) (result []*model_schedules.Schedules, err error) {
 	startDate, err := time.Parse("02-01-2006", c.StartDate)
 	if err != nil {
 		return nil, fmt.Errorf("invalid StartDate format: %v", err)
@@ -50,21 +50,33 @@ func SchedulesAdd(ctx context.Context, c *SchedulesAddCommand) (result *model_sc
 		return nil, fmt.Errorf("invalid EndTime format: %v", err)
 	}
 
-	result = &model_schedules.Schedules{
-		ID:            primitive.NewObjectID().Hex(),
-		ClassID:       c.ClassID,
-		Description:   c.Description,
-		SchedulesType: src_const.MapSchedulesType[c.SchedulesType],
-		DayOfWeek:     c.DayOfWeek,
-		StartDate:     startDate,
-		EndDate:       endDate,
-		StartTime:     startTime,
-		EndTime:       endTime,
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
+	targetDay, err := IntToWeekday(c.DayOfWeek)
+	if err != nil {
+		return nil, err
 	}
 
-	_, err = collection.Schedules().Collection().InsertOne(ctx, result)
+	for date := startDate; date.Before(endDate) || date.Equal(endDate); date = date.AddDate(0, 0, 1) {
+		if date.Weekday() == targetDay {
+			result = append(result, &model_schedules.Schedules{
+				ID:            primitive.NewObjectID().Hex(),
+				ClassID:       c.ClassID,
+				Description:   c.Description,
+				SchedulesType: src_const.MapSchedulesType[c.SchedulesType],
+				DayOfWeek:     c.DayOfWeek,
+				Day:           date,
+				StartTime:     startTime,
+				EndTime:       endTime,
+				CreatedAt:     time.Now(),
+				UpdatedAt:     time.Now(),
+			})
+		}
+	}
+	var scheduleDocs []interface{}
+	for _, schedule := range result {
+		scheduleDocs = append(scheduleDocs, schedule)
+	}
+
+	_, err = collection.Schedules().Collection().InsertMany(ctx, scheduleDocs)
 	if err != nil {
 		codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
 		service.AddError(ctx, "", "", codeErr)
@@ -101,7 +113,7 @@ func SchedulesAdd(ctx context.Context, c *SchedulesAddCommand) (result *model_sc
 }
 
 func GetEmailsByClassID(ctx context.Context, classID string) ([]string, error) {
-	cursor, err := collection.User().Collection().Find(ctx, bson.M{"_class_id": classID})
+	cursor, err := collection.User().Collection().Find(ctx, bson.M{"class_id": classID})
 	if err != nil {
 		codeErr := src_const.ServiceErr_E_Learning + src_const.ElementErr_Schedules + src_const.InternalError
 		service.AddError(ctx, "", "", codeErr)
@@ -126,4 +138,11 @@ func GetEmailsByClassID(ctx context.Context, classID string) ([]string, error) {
 		return nil, fmt.Errorf("%s: %v", codeErr, err)
 	}
 	return emails, nil
+}
+
+func IntToWeekday(day int) (time.Weekday, error) {
+	if day < 1 || day > 7 {
+		return time.Sunday, fmt.Errorf("invalid day number: %d (must be 1-7)", day)
+	}
+	return time.Weekday(day % 7), nil
 }

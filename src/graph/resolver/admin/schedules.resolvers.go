@@ -8,11 +8,10 @@ import (
 	"context"
 	graph_model "e-learning/src/graph/generated/model"
 	service_schedules "e-learning/src/service/schedules"
-	"fmt"
 )
 
 // SchedulesAdd is the resolver for the schedulesAdd field.
-func (r *mutationResolver) SchedulesAdd(ctx context.Context, data *graph_model.SchedulesAdd) (*graph_model.Schedules, error) {
+func (r *mutationResolver) SchedulesAdd(ctx context.Context, data *graph_model.SchedulesAdd) ([]graph_model.Schedules, error) {
 	input := &service_schedules.SchedulesAddCommand{
 		ClassID:       data.ClassID,
 		Description:   data.Description,
@@ -26,20 +25,60 @@ func (r *mutationResolver) SchedulesAdd(ctx context.Context, data *graph_model.S
 
 	result, err := service_schedules.SchedulesAdd(ctx, input)
 	if err != nil {
-		return &graph_model.Schedules{}, err
+		return nil, err
+	}
+	var schedulesList []graph_model.Schedules
+	for _, s := range result {
+		schedulesList = append(schedulesList, graph_model.Schedules{
+			ID:            s.ID,
+			Description:   s.Description,
+			StartTime:     s.StartTime,
+			EndTime:       s.EndTime,
+			DayOfWeek:     s.DayOfWeek,
+			Day:           s.Day,
+			SchedulesType: s.SchedulesType,
+			Class: &graph_model.Class{
+				ID:        s.ClassID,
+				ClassName: s.ClassName,
+			},
+		})
 	}
 
-	return result.ConvertToModelGraph(), nil
+	return schedulesList, nil
 }
 
 // SchedulesDelete is the resolver for the schedulesDelete field.
 func (r *mutationResolver) SchedulesDelete(ctx context.Context, data *graph_model.SchedulesDelete) (bool, error) {
-	panic(fmt.Errorf("not implemented: SchedulesDelete - schedulesDelete"))
+	input := &service_schedules.SchedulesDeleteCommand{
+		ID: data.ID,
+	}
+
+	err := service_schedules.SchedulesDelete(ctx, input)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // SchedulesUpdate is the resolver for the schedulesUpdate field.
 func (r *mutationResolver) SchedulesUpdate(ctx context.Context, data *graph_model.SchedulesUpdate) (*graph_model.Schedules, error) {
-	panic(fmt.Errorf("not implemented: SchedulesUpdate - schedulesUpdate"))
+	input := &service_schedules.SchedulesUpdateCommand{
+		ID:          data.ID,
+		Description: data.Description,
+		// DayOfWeek:     data.DayOfWeek,
+		// StartDate:     data.StartDate,
+		// EndDate:       data.EndDate,
+		SchedulesType: data.SchedulesType,
+		StartTime:     data.StartTime,
+		EndTime:       data.EndTime,
+	}
+
+	res, err := service_schedules.SchedulesUpdate(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	return res.ConvertToModelGraph(), nil
 }
 
 // SchedulesList is the resolver for the schedulesList field.
@@ -53,10 +92,9 @@ func (r *queryResolver) SchedulesList(ctx context.Context) ([]graph_model.Schedu
 		schedulesList = append(schedulesList, graph_model.Schedules{
 			ID:            s.ID,
 			Description:   s.Description,
-			StartDate:     s.StartDate,
-			EndDate:       s.EndDate,
 			StartTime:     s.StartTime,
 			EndTime:       s.EndTime,
+			Day:           s.Day,
 			DayOfWeek:     s.DayOfWeek,
 			SchedulesType: s.SchedulesType,
 			Class: &graph_model.Class{

@@ -7,10 +7,19 @@ package resolver_user
 import (
 	"context"
 	graph_model "e-learning/src/graph/generated/model"
-	"fmt"
+	service_user "e-learning/src/service/user"
 )
 
 // UserMe is the resolver for the userMe field.
-func (r *queryResolver) UserMe(ctx context.Context) (*graph_model.User, error) {
-	panic(fmt.Errorf("not implemented: UserMe - userMe"))
+func (r *queryResolver) UserMe(ctx context.Context, userID string) (*graph_model.User, error) {
+	input := &service_user.UserByIDCommand{
+		UserID: userID,
+	}
+
+	result, err := service_user.UserByID(ctx, input)
+	if err != nil {
+		return &graph_model.User{}, err
+	}
+
+	return result.ConvertToModelGraph(), nil
 }

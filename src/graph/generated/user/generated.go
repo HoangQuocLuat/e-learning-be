@@ -117,20 +117,19 @@ type ComplexityRoot struct {
 		Schedules             func(childComplexity int, userID string) int
 		Tuition               func(childComplexity int, userID string) int
 		TuitionPagination     func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
-		UserMe                func(childComplexity int) int
+		UserMe                func(childComplexity int, userID string) int
 		__resolve__service    func(childComplexity int) int
 		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
 	}
 
 	Schedules struct {
 		Class         func(childComplexity int) int
+		Day           func(childComplexity int) int
 		DayOfWeek     func(childComplexity int) int
 		Description   func(childComplexity int) int
-		EndDate       func(childComplexity int) int
 		EndTime       func(childComplexity int) int
 		ID            func(childComplexity int) int
 		SchedulesType func(childComplexity int) int
-		StartDate     func(childComplexity int) int
 		StartTime     func(childComplexity int) int
 	}
 
@@ -192,7 +191,7 @@ type QueryResolver interface {
 	Schedules(ctx context.Context, userID string) ([]graph_model.Schedules, error)
 	Tuition(ctx context.Context, userID string) (*graph_model.Tuition, error)
 	TuitionPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.TuitionPagination, error)
-	UserMe(ctx context.Context) (*graph_model.User, error)
+	UserMe(ctx context.Context, userID string) (*graph_model.User, error)
 }
 
 type executableSchema struct {
@@ -566,7 +565,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.UserMe(childComplexity), true
+		args, err := ec.field_Query_userMe_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UserMe(childComplexity, args["user_id"].(string)), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -594,6 +598,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Schedules.Class(childComplexity), true
 
+	case "Schedules.day":
+		if e.complexity.Schedules.Day == nil {
+			break
+		}
+
+		return e.complexity.Schedules.Day(childComplexity), true
+
 	case "Schedules.day_of_week":
 		if e.complexity.Schedules.DayOfWeek == nil {
 			break
@@ -607,13 +618,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Schedules.Description(childComplexity), true
-
-	case "Schedules.end_date":
-		if e.complexity.Schedules.EndDate == nil {
-			break
-		}
-
-		return e.complexity.Schedules.EndDate(childComplexity), true
 
 	case "Schedules.end_time":
 		if e.complexity.Schedules.EndTime == nil {
@@ -635,13 +639,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Schedules.SchedulesType(childComplexity), true
-
-	case "Schedules.start_date":
-		if e.complexity.Schedules.StartDate == nil {
-			break
-		}
-
-		return e.complexity.Schedules.StartDate(childComplexity), true
 
 	case "Schedules.start_time":
 		if e.complexity.Schedules.StartTime == nil {
@@ -979,14 +976,10 @@ input ClassByID {
 
 input SchedulesUpdate {
     id: String!
-    class_id: String!
-    day_of_week: Int
-    start_date: String
-    end_date: String
     start_time: String
     end_time: String
     description: String
-    schedules_type: String
+    schedules_type: Int
 }
 
 input SchedulesDelete {
@@ -1099,8 +1092,7 @@ type PaymentPagination {
 	{Name: "../../schema/model/schedules.type.graphql", Input: `type Schedules @key(fields: "id") {
     id: String!
     day_of_week: Int!
-    start_date: Time!
-    end_date: Time!
+    day: Time!
     start_time: Time!
     end_time: Time!
     schedules_type: String!
@@ -1168,7 +1160,7 @@ type UserPagination {
         search: Map): TuitionPagination!
 }`, BuiltIn: false},
 	{Name: "../../schema/user/user.graphql", Input: `extend type Query {
-    userMe: User!
+    userMe(user_id: String!): User!
 }`, BuiltIn: false},
 	{Name: "../../federation/directives.graphql", Input: `
 	directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
@@ -1479,6 +1471,21 @@ func (ec *executionContext) field_Query_tuitionPagination_args(ctx context.Conte
 }
 
 func (ec *executionContext) field_Query_tuition_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["user_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user_id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_userMe_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -2072,10 +2079,8 @@ func (ec *executionContext) fieldContext_Class_schedules(ctx context.Context, fi
 				return ec.fieldContext_Schedules_id(ctx, field)
 			case "day_of_week":
 				return ec.fieldContext_Schedules_day_of_week(ctx, field)
-			case "start_date":
-				return ec.fieldContext_Schedules_start_date(ctx, field)
-			case "end_date":
-				return ec.fieldContext_Schedules_end_date(ctx, field)
+			case "day":
+				return ec.fieldContext_Schedules_day(ctx, field)
 			case "start_time":
 				return ec.fieldContext_Schedules_start_time(ctx, field)
 			case "end_time":
@@ -2404,10 +2409,8 @@ func (ec *executionContext) fieldContext_Entity_findSchedulesByID(ctx context.Co
 				return ec.fieldContext_Schedules_id(ctx, field)
 			case "day_of_week":
 				return ec.fieldContext_Schedules_day_of_week(ctx, field)
-			case "start_date":
-				return ec.fieldContext_Schedules_start_date(ctx, field)
-			case "end_date":
-				return ec.fieldContext_Schedules_end_date(ctx, field)
+			case "day":
+				return ec.fieldContext_Schedules_day(ctx, field)
 			case "start_time":
 				return ec.fieldContext_Schedules_start_time(ctx, field)
 			case "end_time":
@@ -3654,10 +3657,8 @@ func (ec *executionContext) fieldContext_Query_schedules(ctx context.Context, fi
 				return ec.fieldContext_Schedules_id(ctx, field)
 			case "day_of_week":
 				return ec.fieldContext_Schedules_day_of_week(ctx, field)
-			case "start_date":
-				return ec.fieldContext_Schedules_start_date(ctx, field)
-			case "end_date":
-				return ec.fieldContext_Schedules_end_date(ctx, field)
+			case "day":
+				return ec.fieldContext_Schedules_day(ctx, field)
 			case "start_time":
 				return ec.fieldContext_Schedules_start_time(ctx, field)
 			case "end_time":
@@ -3832,7 +3833,7 @@ func (ec *executionContext) _Query_userMe(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().UserMe(rctx)
+		return ec.resolvers.Query().UserMe(rctx, fc.Args["user_id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3890,6 +3891,17 @@ func (ec *executionContext) fieldContext_Query_userMe(ctx context.Context, field
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_userMe_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -4214,8 +4226,8 @@ func (ec *executionContext) fieldContext_Schedules_day_of_week(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Schedules_start_date(ctx context.Context, field graphql.CollectedField, obj *graph_model.Schedules) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Schedules_start_date(ctx, field)
+func (ec *executionContext) _Schedules_day(ctx context.Context, field graphql.CollectedField, obj *graph_model.Schedules) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Schedules_day(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4228,7 +4240,7 @@ func (ec *executionContext) _Schedules_start_date(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.StartDate, nil
+		return obj.Day, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4245,51 +4257,7 @@ func (ec *executionContext) _Schedules_start_date(ctx context.Context, field gra
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Schedules_start_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Schedules",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Schedules_end_date(ctx context.Context, field graphql.CollectedField, obj *graph_model.Schedules) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Schedules_end_date(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.EndDate, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Schedules_end_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Schedules_day(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Schedules",
 		Field:      field,
@@ -7865,7 +7833,7 @@ func (ec *executionContext) unmarshalInputSchedulesUpdate(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "class_id", "day_of_week", "start_date", "end_date", "start_time", "end_time", "description", "schedules_type"}
+	fieldsInOrder := [...]string{"id", "start_time", "end_time", "description", "schedules_type"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7879,34 +7847,6 @@ func (ec *executionContext) unmarshalInputSchedulesUpdate(ctx context.Context, o
 				return it, err
 			}
 			it.ID = data
-		case "class_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("class_id"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClassID = data
-		case "day_of_week":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("day_of_week"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DayOfWeek = data
-		case "start_date":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_date"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StartDate = data
-		case "end_date":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_date"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.EndDate = data
 		case "start_time":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_time"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -7930,7 +7870,7 @@ func (ec *executionContext) unmarshalInputSchedulesUpdate(ctx context.Context, o
 			it.Description = data
 		case "schedules_type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("schedules_type"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9209,13 +9149,8 @@ func (ec *executionContext) _Schedules(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "start_date":
-			out.Values[i] = ec._Schedules_start_date(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "end_date":
-			out.Values[i] = ec._Schedules_end_date(ctx, field, obj)
+		case "day":
+			out.Values[i] = ec._Schedules_day(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

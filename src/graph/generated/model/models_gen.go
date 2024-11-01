@@ -97,8 +97,7 @@ type Query struct {
 type Schedules struct {
 	ID            string    `json:"id"`
 	DayOfWeek     int       `json:"day_of_week"`
-	StartDate     time.Time `json:"start_date"`
-	EndDate       time.Time `json:"end_date"`
+	Day           time.Time `json:"day"`
 	StartTime     time.Time `json:"start_time"`
 	EndTime       time.Time `json:"end_time"`
 	SchedulesType string    `json:"schedules_type"`
@@ -125,14 +124,10 @@ type SchedulesDelete struct {
 
 type SchedulesUpdate struct {
 	ID            string  `json:"id"`
-	ClassID       string  `json:"class_id"`
-	DayOfWeek     *int    `json:"day_of_week,omitempty"`
-	StartDate     *string `json:"start_date,omitempty"`
-	EndDate       *string `json:"end_date,omitempty"`
 	StartTime     *string `json:"start_time,omitempty"`
 	EndTime       *string `json:"end_time,omitempty"`
 	Description   *string `json:"description,omitempty"`
-	SchedulesType *string `json:"schedules_type,omitempty"`
+	SchedulesType *int    `json:"schedules_type,omitempty"`
 }
 
 type Tuition struct {
