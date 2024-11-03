@@ -68,7 +68,7 @@ func CheckInFace(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error opening video capture device", http.StatusInternalServerError)
 		return
 	}
-	defer webcam.Close()
+	// defer webcam.Close()
 	//mở cửa sổ hiển thị
 	window := gocv.NewWindow("Face Detect")
 	defer window.Close()
@@ -139,16 +139,10 @@ func CheckInFace(w http.ResponseWriter, r *http.Request) {
 
 		// Nhận diện khuôn mặt
 		faceDescriptor, err := face_config.Recognizer.RecognizeSingle(faceBytes)
-		if err != nil || faceDescriptor == nil {
-			// Nếu không nhận diện được khuôn mặt
-			message := "Unable to recognize face"
-			if err := conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
-				log.Println("Write:", err)
-				return
-			}
+		if err != nil {
+			log.Println("err:", err)
 			continue
 		}
-
 		// Phân loại khuôn mặt
 		faceID := face_config.Recognizer.Classify(faceDescriptor.Descriptor)
 		if faceID < 0 {

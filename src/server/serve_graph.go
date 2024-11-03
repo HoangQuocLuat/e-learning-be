@@ -81,5 +81,9 @@ func v1(r chi.Router) {
 			r.Post("/check", service_rest_zalo_payment.CheckPay)
 			r.Post("/callback", service_rest_zalo_payment.CallbackPayment)
 		})
+		r.Route("/test", func(r chi.Router) {
+			r.Post("/openCam", service_rest.TestOpenCam)
+			r.Get("/check", service_rest.StreamHandler)
+		})
 	})
 }
