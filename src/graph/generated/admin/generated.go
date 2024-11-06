@@ -57,6 +57,11 @@ type ComplexityRoot struct {
 		User          func(childComplexity int) int
 	}
 
+	AttendancePagination struct {
+		Paging func(childComplexity int) int
+		Rows   func(childComplexity int) int
+	}
+
 	AuthLoginResponse struct {
 		AccessToken  func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
@@ -127,16 +132,18 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Attendance         func(childComplexity int, userID string) int
-		AuthAdminLogin     func(childComplexity int, userName string, password string) int
-		ClassList          func(childComplexity int) int
-		PaymentPagination  func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
-		SchedulesList      func(childComplexity int) int
-		Tuition            func(childComplexity int, userID string) int
-		TuitionListByMonth func(childComplexity int, month string, year string) int
-		UserPagination     func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
-		__resolve__service func(childComplexity int) int
-		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
+		Attendance           func(childComplexity int, userID string) int
+		AttendancePagination func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}, classID *string) int
+		AuthAdminLogin       func(childComplexity int, userName string, password string) int
+		ClassList            func(childComplexity int) int
+		PaymentPagination    func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
+		PaymentTotalByDay    func(childComplexity int, month string, year string) int
+		SchedulesList        func(childComplexity int) int
+		Tuition              func(childComplexity int, userID string) int
+		TuitionListByMonth   func(childComplexity int, month string, year string) int
+		UserPagination       func(childComplexity int, page int, limit int, orderBy *string, search map[string]interface{}) int
+		__resolve__service   func(childComplexity int) int
+		__resolve_entities   func(childComplexity int, representations []map[string]interface{}) int
 	}
 
 	Schedules struct {
@@ -148,6 +155,10 @@ type ComplexityRoot struct {
 		ID            func(childComplexity int) int
 		SchedulesType func(childComplexity int) int
 		StartTime     func(childComplexity int) int
+	}
+
+	TotalAmountPayment struct {
+		TotalAmount func(childComplexity int) int
 	}
 
 	Tuition struct {
@@ -217,9 +228,11 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Attendance(ctx context.Context, userID string) ([]graph_model.Attendance, error)
+	AttendancePagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}, classID *string) (*graph_model.AttendancePagination, error)
 	AuthAdminLogin(ctx context.Context, userName string, password string) (*graph_model.AuthLoginResponse, error)
 	ClassList(ctx context.Context) ([]graph_model.Class, error)
 	PaymentPagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}) (*graph_model.PaymentPagination, error)
+	PaymentTotalByDay(ctx context.Context, month string, year string) (*graph_model.TotalAmountPayment, error)
 	SchedulesList(ctx context.Context) ([]graph_model.Schedules, error)
 	Tuition(ctx context.Context, userID string) (*graph_model.Tuition, error)
 	TuitionListByMonth(ctx context.Context, month string, year string) ([]graph_model.Tuition, error)
@@ -279,6 +292,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Attendance.User(childComplexity), true
+
+	case "AttendancePagination.paging":
+		if e.complexity.AttendancePagination.Paging == nil {
+			break
+		}
+
+		return e.complexity.AttendancePagination.Paging(childComplexity), true
+
+	case "AttendancePagination.rows":
+		if e.complexity.AttendancePagination.Rows == nil {
+			break
+		}
+
+		return e.complexity.AttendancePagination.Rows(childComplexity), true
 
 	case "AuthLoginResponse.access_token":
 		if e.complexity.AuthLoginResponse.AccessToken == nil {
@@ -676,6 +703,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Attendance(childComplexity, args["user_id"].(string)), true
 
+	case "Query.attendancePagination":
+		if e.complexity.Query.AttendancePagination == nil {
+			break
+		}
+
+		args, err := ec.field_Query_attendancePagination_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.AttendancePagination(childComplexity, args["page"].(int), args["limit"].(int), args["order_by"].(*string), args["search"].(map[string]interface{}), args["class_id"].(*string)), true
+
 	case "Query.authAdminLogin":
 		if e.complexity.Query.AuthAdminLogin == nil {
 			break
@@ -706,6 +745,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.PaymentPagination(childComplexity, args["page"].(int), args["limit"].(int), args["order_by"].(*string), args["search"].(map[string]interface{})), true
+
+	case "Query.paymentTotalByDay":
+		if e.complexity.Query.PaymentTotalByDay == nil {
+			break
+		}
+
+		args, err := ec.field_Query_paymentTotalByDay_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PaymentTotalByDay(childComplexity, args["month"].(string), args["year"].(string)), true
 
 	case "Query.schedulesList":
 		if e.complexity.Query.SchedulesList == nil {
@@ -824,6 +875,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Schedules.StartTime(childComplexity), true
+
+	case "TotalAmountPayment.totalAmount":
+		if e.complexity.TotalAmountPayment.TotalAmount == nil {
+			break
+		}
+
+		return e.complexity.TotalAmountPayment.TotalAmount(childComplexity), true
 
 	case "Tuition.discount":
 		if e.complexity.Tuition.Discount == nil {
@@ -1236,7 +1294,11 @@ input UserDelete {
     time_check_out: Time
     user: User! @provides(fields: "id")
 }
-`, BuiltIn: false},
+
+type AttendancePagination {
+    rows: [Attendance!]!
+    paging: Pagination!
+}`, BuiltIn: false},
 	{Name: "../../schema/model/auth.type.graphql", Input: `type AuthLoginResponse {
     access_token: String!
     refresh_token: String!
@@ -1281,6 +1343,10 @@ type Pagination {
 type PaymentPagination {
     rows: [Payment!]!
     paging: Pagination!
+}
+
+type TotalAmountPayment {
+    totalAmount: Int!
 }`, BuiltIn: false},
 	{Name: "../../schema/model/schedules.type.graphql", Input: `type Schedules @key(fields: "id") {
     id: String!
@@ -1330,6 +1396,13 @@ type UserPagination {
 }`, BuiltIn: false},
 	{Name: "../../schema/admin/attendance.graphql", Input: `extend type Query {
     attendance(user_id: String!): [Attendance!]!
+    attendancePagination(
+        page: Int!
+        limit: Int!
+        order_by: String
+        search: Map
+        class_id: String
+    ): AttendancePagination!
 }`, BuiltIn: false},
 	{Name: "../../schema/admin/auth.graphql", Input: `extend type Query {
     authAdminLogin(user_name: String!, password: String!): AuthLoginResponse!
@@ -1355,6 +1428,10 @@ extend type Mutation {
         order_by: String
         search: Map
     ): PaymentPagination!
+    paymentTotalByDay(
+        month: String!
+        year: String!
+    ): TotalAmountPayment!
 }
 `, BuiltIn: false},
 	{Name: "../../schema/admin/schedules.graphql", Input: `extend type Query {
@@ -1735,6 +1812,57 @@ func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_attendancePagination_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["page"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["page"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["order_by"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("order_by"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["order_by"] = arg2
+	var arg3 map[string]interface{}
+	if tmp, ok := rawArgs["search"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("search"))
+		arg3, err = ec.unmarshalOMap2map(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["search"] = arg3
+	var arg4 *string
+	if tmp, ok := rawArgs["class_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("class_id"))
+		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["class_id"] = arg4
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_attendance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1813,6 +1941,30 @@ func (ec *executionContext) field_Query_paymentPagination_args(ctx context.Conte
 		}
 	}
 	args["search"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_paymentTotalByDay_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["month"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("month"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["month"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["year"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("year"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["year"] = arg1
 	return args, nil
 }
 
@@ -2176,6 +2328,116 @@ func (ec *executionContext) fieldContext_Attendance_user(ctx context.Context, fi
 				return ec.fieldContext_User_lessons_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AttendancePagination_rows(ctx context.Context, field graphql.CollectedField, obj *graph_model.AttendancePagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AttendancePagination_rows(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rows, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]graph_model.Attendance)
+	fc.Result = res
+	return ec.marshalNAttendance2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendanceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AttendancePagination_rows(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AttendancePagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Attendance_id(ctx, field)
+			case "time_check_in":
+				return ec.fieldContext_Attendance_time_check_in(ctx, field)
+			case "status_check_in":
+				return ec.fieldContext_Attendance_status_check_in(ctx, field)
+			case "time_check_out":
+				return ec.fieldContext_Attendance_time_check_out(ctx, field)
+			case "user":
+				return ec.fieldContext_Attendance_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Attendance", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AttendancePagination_paging(ctx context.Context, field graphql.CollectedField, obj *graph_model.AttendancePagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AttendancePagination_paging(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Paging, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(graph_model.Pagination)
+	fc.Result = res
+	return ec.marshalNPagination2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPagination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AttendancePagination_paging(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AttendancePagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "current_page":
+				return ec.fieldContext_Pagination_current_page(ctx, field)
+			case "limit":
+				return ec.fieldContext_Pagination_limit(ctx, field)
+			case "total_pages":
+				return ec.fieldContext_Pagination_total_pages(ctx, field)
+			case "total":
+				return ec.fieldContext_Pagination_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Pagination", field.Name)
 		},
 	}
 	return fc, nil
@@ -4701,6 +4963,67 @@ func (ec *executionContext) fieldContext_Query_attendance(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_attendancePagination(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_attendancePagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AttendancePagination(rctx, fc.Args["page"].(int), fc.Args["limit"].(int), fc.Args["order_by"].(*string), fc.Args["search"].(map[string]interface{}), fc.Args["class_id"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.AttendancePagination)
+	fc.Result = res
+	return ec.marshalNAttendancePagination2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendancePagination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_attendancePagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "rows":
+				return ec.fieldContext_AttendancePagination_rows(ctx, field)
+			case "paging":
+				return ec.fieldContext_AttendancePagination_paging(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AttendancePagination", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_attendancePagination_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_authAdminLogin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_authAdminLogin(ctx, field)
 	if err != nil {
@@ -4871,6 +5194,65 @@ func (ec *executionContext) fieldContext_Query_paymentPagination(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_paymentPagination_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_paymentTotalByDay(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_paymentTotalByDay(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().PaymentTotalByDay(rctx, fc.Args["month"].(string), fc.Args["year"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph_model.TotalAmountPayment)
+	fc.Result = res
+	return ec.marshalNTotalAmountPayment2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTotalAmountPayment(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_paymentTotalByDay(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "totalAmount":
+				return ec.fieldContext_TotalAmountPayment_totalAmount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TotalAmountPayment", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_paymentTotalByDay_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -5731,6 +6113,50 @@ func (ec *executionContext) fieldContext_Schedules_class(ctx context.Context, fi
 				return ec.fieldContext_Class_schedules(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Class", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TotalAmountPayment_totalAmount(ctx context.Context, field graphql.CollectedField, obj *graph_model.TotalAmountPayment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TotalAmountPayment_totalAmount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalAmount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TotalAmountPayment_totalAmount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TotalAmountPayment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9587,6 +10013,50 @@ func (ec *executionContext) _Attendance(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var attendancePaginationImplementors = []string{"AttendancePagination"}
+
+func (ec *executionContext) _AttendancePagination(ctx context.Context, sel ast.SelectionSet, obj *graph_model.AttendancePagination) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, attendancePaginationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AttendancePagination")
+		case "rows":
+			out.Values[i] = ec._AttendancePagination_rows(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "paging":
+			out.Values[i] = ec._AttendancePagination_paging(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var authLoginResponseImplementors = []string{"AuthLoginResponse"}
 
 func (ec *executionContext) _AuthLoginResponse(ctx context.Context, sel ast.SelectionSet, obj *graph_model.AuthLoginResponse) graphql.Marshaler {
@@ -10298,6 +10768,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "attendancePagination":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_attendancePagination(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "authAdminLogin":
 			field := field
 
@@ -10352,6 +10844,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_paymentPagination(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "paymentTotalByDay":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_paymentTotalByDay(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -10575,6 +11089,45 @@ func (ec *executionContext) _Schedules(ctx context.Context, sel ast.SelectionSet
 			}
 		case "class":
 			out.Values[i] = ec._Schedules_class(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var totalAmountPaymentImplementors = []string{"TotalAmountPayment"}
+
+func (ec *executionContext) _TotalAmountPayment(ctx context.Context, sel ast.SelectionSet, obj *graph_model.TotalAmountPayment) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, totalAmountPaymentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TotalAmountPayment")
+		case "totalAmount":
+			out.Values[i] = ec._TotalAmountPayment_totalAmount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -11272,6 +11825,20 @@ func (ec *executionContext) marshalNAttendance2ᚖeᚑlearningᚋsrcᚋgraphᚋg
 	return ec._Attendance(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNAttendancePagination2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendancePagination(ctx context.Context, sel ast.SelectionSet, v graph_model.AttendancePagination) graphql.Marshaler {
+	return ec._AttendancePagination(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAttendancePagination2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendancePagination(ctx context.Context, sel ast.SelectionSet, v *graph_model.AttendancePagination) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AttendancePagination(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNAuthLoginResponse2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAuthLoginResponse(ctx context.Context, sel ast.SelectionSet, v graph_model.AuthLoginResponse) graphql.Marshaler {
 	return ec._AuthLoginResponse(ctx, sel, &v)
 }
@@ -11569,6 +12136,20 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTotalAmountPayment2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTotalAmountPayment(ctx context.Context, sel ast.SelectionSet, v graph_model.TotalAmountPayment) graphql.Marshaler {
+	return ec._TotalAmountPayment(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTotalAmountPayment2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTotalAmountPayment(ctx context.Context, sel ast.SelectionSet, v *graph_model.TotalAmountPayment) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TotalAmountPayment(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNTuition2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐTuition(ctx context.Context, sel ast.SelectionSet, v graph_model.Tuition) graphql.Marshaler {

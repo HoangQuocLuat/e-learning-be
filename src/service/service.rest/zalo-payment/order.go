@@ -24,6 +24,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+
 type object map[string]interface{}
 
 func Order(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +55,7 @@ func Order(w http.ResponseWriter, r *http.Request) {
 
 	if tuition.RemainingFee == 0 {
 		responseData := service_rest_resp.Response{
-			Status:  "PaymentCompleted",
+			Status:  2002,
 			Message: "Hoc phi da thanh toan",
 			Data:    nil,
 		}
@@ -123,7 +124,7 @@ func Order(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseData := service_rest_resp.Response{
-		Status:  "success",
+		Status:  http.StatusOK,
 		Message: "Request processed successfully",
 		Data: map[string]interface{}{
 			"transaction_id": trannnID,

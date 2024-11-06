@@ -8,12 +8,54 @@ import (
 	"context"
 	generated_admin "e-learning/src/graph/generated/admin"
 	graph_model "e-learning/src/graph/generated/model"
+	service_attendence "e-learning/src/service/attendance"
 	"fmt"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 // Attendance is the resolver for the attendance field.
 func (r *queryResolver) Attendance(ctx context.Context, userID string) ([]graph_model.Attendance, error) {
 	panic(fmt.Errorf("not implemented: Attendance - attendance"))
+}
+
+// AttendancePagination is the resolver for the attendancePagination field.
+func (r *queryResolver) AttendancePagination(ctx context.Context, page int, limit int, orderBy *string, search map[string]interface{}, classID *string) (*graph_model.AttendancePagination, error) {
+	input := &service_attendence.AttendancePaginationCommand{
+		Page:  page,
+		Limit: limit,
+	}
+
+	if orderBy != nil {
+		input.OrderBy = *orderBy
+	}
+
+	if search != nil {
+		input.Search = search
+	}
+
+	total, result, err := service_attendence.AttendancePagination(ctx, input)
+	if err != nil {
+		if graphql.GetErrors(ctx) == nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+
+	ats := make([]graph_model.Attendance, 0)
+	for i := 0; i < len(result); i++ {
+		ats = append(ats, *result[i].ConvertToModelGraph())
+	}
+
+	return &graph_model.AttendancePagination{
+		Rows: ats,
+		Paging: graph_model.Pagination{
+			CurrentPage: page,
+			Limit:       limit,
+			TotalPages:  CalculateTotalPage(total, limit),
+			Total:       total,
+		},
+	}, nil
 }
 
 // Query returns generated_admin.QueryResolver implementation.

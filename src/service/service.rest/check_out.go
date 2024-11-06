@@ -10,23 +10,23 @@ import (
 	"strings"
 	"time"
 
-	src_const "e-learning/src/const"
 	"e-learning/src/cronjob"
 	"e-learning/src/database/collection"
 	model_attendance "e-learning/src/database/model/attendance"
-	model_user "e-learning/src/database/model/user"
 	face_config "e-learning/src/face-config"
 	service_rest_resp "e-learning/src/service/service.rest/response"
 	service_user "e-learning/src/service/user"
 
 	"github.com/Kagami/go-face"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gocv.io/x/gocv"
 )
 
+//
+
 // TestOpenCam handles the face detection and check-in process
-func TestOpenCam(w http.ResponseWriter, r *http.Request) {
+func CheckOut(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Image   string `json:"image"`
 		ClassID string `json:"class_id"`
@@ -118,7 +118,7 @@ func TestOpenCam(w http.ResponseWriter, r *http.Request) {
 	faceID := face_config.Recognizer.Classify(faceDescriptor.Descriptor)
 	if faceID < 0 {
 		mes := service_rest_resp.Response{
-			Status:  2,
+			Status:  3,
 			Message: "khuôn mặt không tồn tại",
 			Data:    nil,
 		}
@@ -126,64 +126,52 @@ func TestOpenCam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check-in logic
+	// Check-out logic
+	location, err := time.LoadLocation("Asia/Bangkok")
+	if err != nil {
+		log.Fatalf("Lỗi khi tải múi giờ: %v", err)
+	}
 	today := time.Now().Truncate(24 * time.Hour)
-	filter := bson.M{
+	fil := bson.M{
 		"user_id": faceDesc[faceID].ID,
 		"time_check_in": bson.M{
 			"$gte": today,
 			"$lt":  today.Add(24 * time.Hour),
 		},
+		"status_check_in": "Điểm danh thành công",
 	}
-
-	// Check if already checked in
-	// res := &model_attendance.Attendance{}
-	condition := collection.Attendance().Collection().FindOne(r.Context(), filter)
-	if condition.Err() == nil {
+	var existingAttendance model_attendance.Attendance
+	ctx := context.Background()
+	err = collection.Attendance().Collection().FindOne(ctx, fil).Decode(&existingAttendance)
+	if err == mongo.ErrNoDocuments {
 		mes := service_rest_resp.Response{
-			Status:  3,
-			Message: "Bạn đã điểm danh",
+			Status:  1,
+			Message: "Bạn chưa điểm danh vào",
 			Data:    nil,
 		}
 		json.NewEncoder(w).Encode(map[string]interface{}{"message": mes})
 		return
 	}
-
-	//find name with by id
-	ctx := context.Background()
-	u := &model_user.User{}
-	err = collection.User().Collection().FindOne(ctx, bson.M{"_id": faceDesc[faceID].ID}).Decode(u)
 	if err != nil {
-		fmt.Println(err)
+		log.Println("Error decoding user:", err)
 		return
 	}
-
-	// Save new check-in
-	location, err := time.LoadLocation("Asia/Bangkok")
-	if err != nil {
-		log.Fatalf("Lỗi khi tải múi giờ: %v", err)
+	update := bson.M{
+		"$set": bson.M{
+			"time_check_out": time.Now().In(location),
+			"updated_at":     time.Now().In(location),
+		},
 	}
-	fmt.Println("fff", time.Now().In(location))
-	newAttendance := &model_attendance.Attendance{
-		ID:            primitive.NewObjectID().Hex(),
-		UserID:        faceDesc[faceID].ID,
-		Name:          u.Name,
-		TimeCheckIn:   primitive.NewDateTimeFromTime(time.Now().In(location)).Time(),
-		StatusCheckIn: src_const.MapStatusCheckIn[1],
-		CreatedAt:     time.Now().In(location),
-		UpdatedAt:     time.Now().In(location),
-	}
-	fmt.Println(newAttendance.TimeCheckIn)
-	_, err = collection.Attendance().Collection().InsertOne(r.Context(), newAttendance)
+	_, err = collection.Attendance().Collection().UpdateOne(ctx, fil, update)
 	if err != nil {
-		log.Println("Error inserting attendance:", err)
-		http.Error(w, "Failed to insert attendance", http.StatusInternalServerError)
+		log.Println("Error updating attendance:", err)
+		http.Error(w, "Failed to update attendance", http.StatusInternalServerError)
 		return
 	}
 	go func() {
 		subject := "Thông báo điểm danh"
-		body := fmt.Sprint("Bạn đã điểm danh vào lúc: ", newAttendance.TimeCheckIn)
-		if err := cronjob.SendMail(u.Email, subject, body); err != nil {
+		body := fmt.Sprint("Bạn đã điểm danh vào lúc: ", existingAttendance.TimeCheckOut)
+		if err := cronjob.SendMail(faceDesc[faceID].Email, subject, body); err != nil {
 			log.Println("Error sending email:", err)
 		}
 	}()
@@ -191,7 +179,7 @@ func TestOpenCam(w http.ResponseWriter, r *http.Request) {
 	mes := service_rest_resp.Response{
 		Status:  http.StatusOK,
 		Message: "Check-in success",
-		Data:    newAttendance,
+		Data:    existingAttendance,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

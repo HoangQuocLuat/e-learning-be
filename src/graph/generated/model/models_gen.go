@@ -16,6 +16,11 @@ type Attendance struct {
 
 func (Attendance) IsEntity() {}
 
+type AttendancePagination struct {
+	Rows   []Attendance `json:"rows"`
+	Paging Pagination   `json:"paging"`
+}
+
 type AuthLoginResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -128,6 +133,10 @@ type SchedulesUpdate struct {
 	EndTime       *string `json:"end_time,omitempty"`
 	Description   *string `json:"description,omitempty"`
 	SchedulesType *int    `json:"schedules_type,omitempty"`
+}
+
+type TotalAmountPayment struct {
+	TotalAmount int `json:"totalAmount"`
 }
 
 type Tuition struct {

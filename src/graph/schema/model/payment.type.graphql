@@ -12,3 +12,7 @@ type PaymentPagination {
     rows: [Payment!]!
     paging: Pagination!
 }
+
+type TotalAmountPayment {
+    totalAmount: Int!
+}

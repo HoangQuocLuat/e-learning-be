@@ -1,3 +1,10 @@
 extend type Query {
     attendance(user_id: String!): [Attendance!]!
+    attendancePagination(
+        page: Int!
+        limit: Int!
+        order_by: String
+        search: Map
+        class_id: String
+    ): AttendancePagination!
 }

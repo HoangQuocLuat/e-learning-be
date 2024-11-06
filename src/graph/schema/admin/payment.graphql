@@ -5,4 +5,8 @@ extend type Query {
         order_by: String
         search: Map
     ): PaymentPagination!
+    paymentTotalByDay(
+        month: String!
+        year: String!
+    ): TotalAmountPayment!
 }

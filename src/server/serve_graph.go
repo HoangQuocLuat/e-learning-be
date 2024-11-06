@@ -72,10 +72,6 @@ func v1(r chi.Router) {
 		r.Route("/upload", func(r chi.Router) {
 			r.Post("/image", service_user.UploadImage)
 		})
-		r.Route("/ws", func(r chi.Router) {
-			r.Get("/checkIn", service_rest.CheckInFace)
-			r.Get("/checkOut", service_rest.CheckOutFace)
-		})
 		r.Route("/payment", func(r chi.Router) {
 			r.Post("/order", service_rest_zalo_payment.Order)
 			r.Post("/check", service_rest_zalo_payment.CheckPay)
@@ -83,7 +79,7 @@ func v1(r chi.Router) {
 		})
 		r.Route("/test", func(r chi.Router) {
 			r.Post("/openCam", service_rest.TestOpenCam)
-			r.Get("/check", service_rest.StreamHandler)
+			r.Post("/checkOut", service_rest.CheckOut)
 		})
 	})
 }

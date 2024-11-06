@@ -5,3 +5,8 @@ type Attendance @key(fields: "id") {
     time_check_out: Time
     user: User! @provides(fields: "id")
 }
+
+type AttendancePagination {
+    rows: [Attendance!]!
+    paging: Pagination!
+}

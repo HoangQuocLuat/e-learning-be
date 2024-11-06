@@ -122,7 +122,7 @@ func CheckPay(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseData := service_rest_resp.Response{
-		Status:  "success",
+		Status:  http.StatusOK,
 		Message: "Request processed successfully",
 		Data: map[string]interface{}{
 			"status":      result.ReturnCode,

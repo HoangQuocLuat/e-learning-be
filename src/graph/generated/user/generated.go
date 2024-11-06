@@ -56,6 +56,11 @@ type ComplexityRoot struct {
 		User          func(childComplexity int) int
 	}
 
+	AttendancePagination struct {
+		Paging func(childComplexity int) int
+		Rows   func(childComplexity int) int
+	}
+
 	AuthLoginResponse struct {
 		AccessToken  func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
@@ -131,6 +136,10 @@ type ComplexityRoot struct {
 		ID            func(childComplexity int) int
 		SchedulesType func(childComplexity int) int
 		StartTime     func(childComplexity int) int
+	}
+
+	TotalAmountPayment struct {
+		TotalAmount func(childComplexity int) int
 	}
 
 	Tuition struct {
@@ -247,6 +256,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Attendance.User(childComplexity), true
+
+	case "AttendancePagination.paging":
+		if e.complexity.AttendancePagination.Paging == nil {
+			break
+		}
+
+		return e.complexity.AttendancePagination.Paging(childComplexity), true
+
+	case "AttendancePagination.rows":
+		if e.complexity.AttendancePagination.Rows == nil {
+			break
+		}
+
+		return e.complexity.AttendancePagination.Rows(childComplexity), true
 
 	case "AuthLoginResponse.access_token":
 		if e.complexity.AuthLoginResponse.AccessToken == nil {
@@ -647,6 +670,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Schedules.StartTime(childComplexity), true
 
+	case "TotalAmountPayment.totalAmount":
+		if e.complexity.TotalAmountPayment.TotalAmount == nil {
+			break
+		}
+
+		return e.complexity.TotalAmountPayment.TotalAmount(childComplexity), true
+
 	case "Tuition.discount":
 		if e.complexity.Tuition.Discount == nil {
 			break
@@ -1043,7 +1073,11 @@ input UserDelete {
     time_check_out: Time
     user: User! @provides(fields: "id")
 }
-`, BuiltIn: false},
+
+type AttendancePagination {
+    rows: [Attendance!]!
+    paging: Pagination!
+}`, BuiltIn: false},
 	{Name: "../../schema/model/auth.type.graphql", Input: `type AuthLoginResponse {
     access_token: String!
     refresh_token: String!
@@ -1088,6 +1122,10 @@ type Pagination {
 type PaymentPagination {
     rows: [Payment!]!
     paging: Pagination!
+}
+
+type TotalAmountPayment {
+    totalAmount: Int!
 }`, BuiltIn: false},
 	{Name: "../../schema/model/schedules.type.graphql", Input: `type Schedules @key(fields: "id") {
     id: String!
@@ -1779,6 +1817,116 @@ func (ec *executionContext) fieldContext_Attendance_user(ctx context.Context, fi
 				return ec.fieldContext_User_lessons_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AttendancePagination_rows(ctx context.Context, field graphql.CollectedField, obj *graph_model.AttendancePagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AttendancePagination_rows(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rows, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]graph_model.Attendance)
+	fc.Result = res
+	return ec.marshalNAttendance2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendanceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AttendancePagination_rows(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AttendancePagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Attendance_id(ctx, field)
+			case "time_check_in":
+				return ec.fieldContext_Attendance_time_check_in(ctx, field)
+			case "status_check_in":
+				return ec.fieldContext_Attendance_status_check_in(ctx, field)
+			case "time_check_out":
+				return ec.fieldContext_Attendance_time_check_out(ctx, field)
+			case "user":
+				return ec.fieldContext_Attendance_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Attendance", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AttendancePagination_paging(ctx context.Context, field graphql.CollectedField, obj *graph_model.AttendancePagination) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AttendancePagination_paging(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Paging, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(graph_model.Pagination)
+	fc.Result = res
+	return ec.marshalNPagination2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐPagination(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AttendancePagination_paging(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AttendancePagination",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "current_page":
+				return ec.fieldContext_Pagination_current_page(ctx, field)
+			case "limit":
+				return ec.fieldContext_Pagination_limit(ctx, field)
+			case "total_pages":
+				return ec.fieldContext_Pagination_total_pages(ctx, field)
+			case "total":
+				return ec.fieldContext_Pagination_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Pagination", field.Name)
 		},
 	}
 	return fc, nil
@@ -4495,6 +4643,50 @@ func (ec *executionContext) fieldContext_Schedules_class(ctx context.Context, fi
 				return ec.fieldContext_Class_schedules(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Class", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TotalAmountPayment_totalAmount(ctx context.Context, field graphql.CollectedField, obj *graph_model.TotalAmountPayment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TotalAmountPayment_totalAmount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalAmount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TotalAmountPayment_totalAmount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TotalAmountPayment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8351,6 +8543,50 @@ func (ec *executionContext) _Attendance(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
+var attendancePaginationImplementors = []string{"AttendancePagination"}
+
+func (ec *executionContext) _AttendancePagination(ctx context.Context, sel ast.SelectionSet, obj *graph_model.AttendancePagination) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, attendancePaginationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AttendancePagination")
+		case "rows":
+			out.Values[i] = ec._AttendancePagination_rows(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "paging":
+			out.Values[i] = ec._AttendancePagination_paging(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var authLoginResponseImplementors = []string{"AuthLoginResponse"}
 
 func (ec *executionContext) _AuthLoginResponse(ctx context.Context, sel ast.SelectionSet, obj *graph_model.AuthLoginResponse) graphql.Marshaler {
@@ -9202,6 +9438,45 @@ func (ec *executionContext) _Schedules(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var totalAmountPaymentImplementors = []string{"TotalAmountPayment"}
+
+func (ec *executionContext) _TotalAmountPayment(ctx context.Context, sel ast.SelectionSet, obj *graph_model.TotalAmountPayment) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, totalAmountPaymentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TotalAmountPayment")
+		case "totalAmount":
+			out.Values[i] = ec._TotalAmountPayment_totalAmount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var tuitionImplementors = []string{"Tuition", "_Entity"}
 
 func (ec *executionContext) _Tuition(ctx context.Context, sel ast.SelectionSet, obj *graph_model.Tuition) graphql.Marshaler {
@@ -9817,6 +10092,50 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 func (ec *executionContext) marshalNAttendance2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendance(ctx context.Context, sel ast.SelectionSet, v graph_model.Attendance) graphql.Marshaler {
 	return ec._Attendance(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAttendance2ᚕeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendanceᚄ(ctx context.Context, sel ast.SelectionSet, v []graph_model.Attendance) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAttendance2eᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendance(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNAttendance2ᚖeᚑlearningᚋsrcᚋgraphᚋgeneratedᚋmodelᚐAttendance(ctx context.Context, sel ast.SelectionSet, v *graph_model.Attendance) graphql.Marshaler {

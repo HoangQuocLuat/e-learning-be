@@ -50,3 +50,19 @@ func (r *queryResolver) PaymentPagination(ctx context.Context, page int, limit i
 		},
 	}, nil
 }
+
+// PaymentTotalByDay is the resolver for the paymentTotalByDay field.
+func (r *queryResolver) PaymentTotalByDay(ctx context.Context, month string, year string) (*graph_model.TotalAmountPayment, error) {
+	input := &service_payment.PaymentGetByDayCommand{
+		Month: month,
+		Year:  year,
+	}
+	res, err := service_payment.PaymentGetByDay(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &graph_model.TotalAmountPayment{
+		TotalAmount: res,
+	}, nil
+}
